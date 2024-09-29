@@ -4,18 +4,17 @@ import (
 	"os"
 	"testing"
 
+	"github.com/TeddyCr/priceitt/models"
+	"github.com/TeddyCr/priceitt/utils/migrations"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/assert"
-	"priceitt.xyz/models"
-	"priceitt.xyz/utils/migrations"
 )
 
 func tearDown() {
 	// Remove test db
 	os.Remove("testdata/test.db")
 }
-
 
 func TestMain(m *testing.M) {
 	m.Run()
@@ -29,20 +28,20 @@ func TestMain(m *testing.M) {
 func TestExecMigration(t *testing.T) {
 	// 1. Run migration
 	migrationConfig := models.MigrationConfig{
-		SchemaPath: "/utils/migrations/testdata/schema",
-		DataPath:   "/utils/migrations/testdata/data",
+		SchemaPath:   "/utils/migrations/testdata/schema",
+		DataPath:     "/utils/migrations/testdata/data",
 		MetadataPath: "/utils/migrations/testdata/metadata",
 		MetadataQueries: models.MigrationMetadataQueries{
-			InsertMetadataQuery:          "INSERT INTO DATABASE_MIGRATION_LOGS (version, query, checksum, execution_time) VALUES ($1, $2, $3, $4)",
-			SelectMigrationVersionsQuery: "SELECT version FROM DATABASE_MIGRATION_LOGS",
+			InsertMetadataQuery:           "INSERT INTO DATABASE_MIGRATION_LOGS (version, query, checksum, execution_time) VALUES ($1, $2, $3, $4)",
+			SelectMigrationVersionsQuery:  "SELECT version FROM DATABASE_MIGRATION_LOGS",
 			SelectMigrationChecksumsQuery: "SELECT checksum FROM DATABASE_MIGRATION_LOGS",
 		},
-		Force:      false,
+		Force:          false,
 		CheckIntegrity: false,
 	}
 
 	dbConfig := models.DatabaseConfig{
-		DriverClass: "sqlite3",
+		DriverClass:      "sqlite3",
 		ConnectionString: "testdata/test.db",
 	}
 
@@ -89,7 +88,3 @@ func TestExecMigration(t *testing.T) {
 	}
 	assert.Equal(t, 1, count)
 }
-
-
-
-

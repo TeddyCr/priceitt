@@ -11,12 +11,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/TeddyCr/priceitt/models"
+	"github.com/TeddyCr/priceitt/utils/database"
+	"github.com/TeddyCr/priceitt/utils/files"
 	"github.com/jmoiron/sqlx"
-	_ "github.com/lib/pq" // postgres driver
+	_ "github.com/lib/pq"           // postgres driver
 	_ "github.com/mattn/go-sqlite3" // sqlite3 driver
-	"priceitt.xyz/models"
-	"priceitt.xyz/utils/database"
-	"priceitt.xyz/utils/files"
 )
 
 func ExecMigration(migrationConfig models.MigrationConfig, dbConfig models.DatabaseConfig) {
@@ -204,10 +204,9 @@ func (m *Migrate) createMigrationMetadataTable() {
 	queries := m.getQueries(path[0], "metadata")
 	log.Println("Creating migration metadata table if not exists.")
 	for _, query := range queries {
-		_, err := m.db.Exec(query)		
+		_, err := m.db.Exec(query)
 		if err != nil {
 			log.Fatalf("Error creating metadata table: #%v", err)
 		}
 	}
 }
-

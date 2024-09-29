@@ -3,8 +3,8 @@ package database
 import (
 	"log"
 
+	"github.com/TeddyCr/priceitt/models"
 	"github.com/jmoiron/sqlx"
-	"priceitt.xyz/models"
 )
 
 func Connect(dbConfig models.DatabaseConfig) *sqlx.DB {

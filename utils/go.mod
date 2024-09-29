@@ -1,4 +1,4 @@
-module priceitt.xyz/utils
+module github.com/TeddyCr/priceitt/utils
 
 go 1.22
 
