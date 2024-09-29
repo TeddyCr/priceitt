@@ -9,7 +9,7 @@ require (
 	github.com/lib/pq v1.10.9
 	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/stretchr/testify v1.9.0
-	priceitt.xyz/models v0.0.1
+	github.com/TeddyCr/priceitt/models v0.0.1-alpha
 )
 
 require (
@@ -18,4 +18,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace priceitt.xyz/models => ../models
+replace github.com/TeddyCr/priceitt/models => ../models
