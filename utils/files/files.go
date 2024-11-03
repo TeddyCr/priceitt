@@ -5,7 +5,16 @@ import (
 	"path/filepath"
 )
 
-func GetRoot() string {
-	wd, _ := os.Getwd()
+type GetWdFunc func() (string, error)
+
+func GetRoot(getwd GetWdFunc) string {
+	if getwd == nil {
+		getwd = os.Getwd
+	}
+	wd, _ := getwd()
 	return filepath.Dir(filepath.Dir(wd))
+}
+
+func GetRootDefault() string {
+	return GetRoot(nil)
 }

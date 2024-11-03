@@ -1,7 +1,10 @@
 package json
 
 import (
+	"fmt"
+	"strings"
 	"github.com/xeipuuv/gojsonschema"
+	
 )
 
 type JsonSchemaValidatorResult struct {
@@ -22,4 +25,18 @@ func ValidateJsonSchema(schemaPath string, entity interface{}) (JsonSchemaValida
 		IsValid: result.Valid(),
 		Errors: result.Errors(),
 	}, nil
+}
+
+func buildHttpPath(version string, entityType string, extra string) string {
+	var path string
+	switch {
+		case strings.Contains(entityType,"create"):
+			path = "createEntities"
+		case extra != "":
+			path = "entities"
+		default:
+			path = extra
+	}
+	root := fmt.Sprintf("https://raw.githubusercontent.com/TeddyCr/priceitt/refs/tags/models/%s/schema/%s/%s.json", version, path, entityType)
+	return root
 }

@@ -73,7 +73,7 @@ func (m *Migrate) migrateFiles(migrationFiles []string) {
 }
 
 func (m *Migrate) getMigrationFiles(path string) []string {
-	root := files.GetRoot()
+	root := files.GetRootDefault()
 	migrationFiles, err := filepath.Glob(root + path + "/*.sql")
 	if err != nil {
 		log.Fatalf("Error retrieving migration files: #%v", err)
