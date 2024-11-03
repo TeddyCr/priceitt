@@ -13,4 +13,6 @@ type IEntity interface {
 	GetDescription() string
 	GetUpdatedAt() time.Time
 	GetCreatedAt() time.Time
+	ToJson() ([]byte, error)
+	JsonToString() (string, error)
 }

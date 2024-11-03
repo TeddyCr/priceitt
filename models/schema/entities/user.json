@@ -49,5 +49,5 @@
         }
     },
     "additionalProperties": false,
-    "required": ["id", "name", "email"]
+    "required": ["id", "name", "email", "authenticationMechanism"]
 }

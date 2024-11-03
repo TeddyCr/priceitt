@@ -17,11 +17,13 @@
         "password": {
             "type": "string",
             "description": "The password of the user",
+            "pattern": "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[!@#$%^&*]).{16,}$",
             "minLength": 16
         },
         "confirmPassword": {
             "type": "string",
             "description": "The password of the user",
+            "pattern": "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[!@#$%^&*]).{16,}$",
             "minLength": 16
         }
     },
