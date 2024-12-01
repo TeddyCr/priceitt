@@ -7,6 +7,7 @@ type CreateUser struct {
 	Email string `json:"email"`
 	Password string `json:"password"`
 	ConfirmPassword string `json:"confirmPassword"`
+	AuthType string `json:"authType"`
 }
 
 func (c *CreateUser) ValidatePassword() error {

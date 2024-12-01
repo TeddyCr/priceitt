@@ -14,10 +14,10 @@ type MigrationMetadataQueries struct {
 }
 
 type MigrationConfig struct {
-	SchemaPath string
-	DataPath   string
-	MetadataPath string
-	MetadataQueries MigrationMetadataQueries
-	Force 	   bool
-	CheckIntegrity bool
+	SchemaPath string `yaml:"schemaPath"`
+	DataPath   string `yaml:"dataPath"`
+	MetadataPath string `yaml:"metadataPath"`
+	MetadataQueries MigrationMetadataQueries `yaml:"metadataQueries"`
+	Force 	   bool `yaml:"force"`
+	CheckIntegrity bool `yaml:"checkIntegrity"`
 }
