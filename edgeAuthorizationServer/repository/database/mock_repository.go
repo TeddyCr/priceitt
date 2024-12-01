@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/TeddyCr/priceitt/models/generated"
+	"github.com/jmoiron/sqlx"
 )
 
 type MockRepository struct {
@@ -31,4 +32,8 @@ func (m MockRepository) Delete(ctx context.Context, id string) error {
 
 func (m MockRepository) List(ctx context.Context) ([]generated.IEntity, error) {
 	return nil, nil
+}
+
+func (m MockRepository) getClient() *sqlx.DB {
+	return nil
 }

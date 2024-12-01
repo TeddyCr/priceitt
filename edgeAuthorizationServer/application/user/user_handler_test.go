@@ -10,7 +10,7 @@ import (
 	"github.com/fernet/fernet-go"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/crypto/argon2"
-	"priceitt.xyz/edgeAuthorizationServer/repository"
+	repository "priceitt.xyz/edgeAuthorizationServer/repository/database"
 )
 
 const (
@@ -23,14 +23,15 @@ func TestUserHandler_Create(t *testing.T) {
     fernetKey := fernet.MustDecodeKeys(fernetString)
 	salt := []byte("salt")
 	userHandler := UserHandler{
-		_database_repository: mockedRepository,
-		fernetKey:   fernetKey,
-		salt:        salt,
+		DatabaseRepository: mockedRepository,
+		FernetKey:   fernetKey,
+		Salt:        salt,
 	}
 
 	createUser := createEntities.CreateUser{
 		Name:     "test",
 		Email:    "example@email.com",
+		AuthType: "basic",
 		Password: password,
 		ConfirmPassword:  password,
 	}

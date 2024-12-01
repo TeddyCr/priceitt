@@ -1,4 +1,4 @@
-package database
+package repository
 
 const (
 	InsertQuery = `INSERT INTO %s (json) VALUES ($1)`

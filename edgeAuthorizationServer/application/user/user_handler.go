@@ -12,13 +12,14 @@ import (
 	"github.com/fernet/fernet-go"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/argon2"
-	"priceitt.xyz/edgeAuthorizationServer/repository"
+
+	dbRepo "priceitt.xyz/edgeAuthorizationServer/repository/database"
 )
 
 type UserHandler struct {
-	_database_repository repository.IRepository
-	fernetKey []*fernet.Key
-	salt []byte
+	DatabaseRepository dbRepo.IDatabaseRepository
+	FernetKey []*fernet.Key
+	Salt []byte
 }
 
 func (c *UserHandler) Create(ctx context.Context, createUser createEntities.CreateUser) (generated.IEntity, error) {
@@ -29,18 +30,18 @@ func (c *UserHandler) Create(ctx context.Context, createUser createEntities.Crea
 	}
 	hashedPassword := argon2.IDKey(
 		[]byte(createUser.Password),
-		c.salt,
+		c.Salt,
 		1,
 		64 * 1024,
 		4,
 		32)
-	token, err := fernet.EncryptAndSign(hashedPassword, c.fernetKey[0])
+	token, err := fernet.EncryptAndSign(hashedPassword, c.FernetKey[0])
 	if err != nil {
 		log.Fatalf("failed to encrypt password: %v", err)
 		return nil, err
 	}
 	user := c.getUser(createUser, token)
-	c._database_repository.Create(ctx, user)
+	c.DatabaseRepository.Create(ctx, user)
 	return user, nil
 }
 
@@ -55,6 +56,7 @@ func (c UserHandler) getUser(createUser createEntities.CreateUser, encryptedPass
 		},
 		Email: createUser.Email,
 		AuthenticationMechanism: auth.Basic{
+			Type: "basic",
 			Password: string(encryptedPassword),
 		},
 	}

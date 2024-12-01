@@ -9,12 +9,14 @@ require (
 	github.com/TeddyCr/priceitt/utils v0.0.1-alpha
 	github.com/fernet/fernet-go v0.0.0-20240119011108-303da6aec611
 	github.com/go-chi/chi/v5 v5.1.0
+	github.com/go-chi/httplog/v2 v2.1.1
 	github.com/google/uuid v1.6.0
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/lib/pq v1.10.9
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/crypto v0.28.0
+	gopkg.in/yaml.v2 v2.4.0
 )
 
 require (
