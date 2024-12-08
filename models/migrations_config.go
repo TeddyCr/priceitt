@@ -8,9 +8,9 @@ type MigrationMetadata struct {
 }
 
 type MigrationMetadataQueries struct {
-	InsertMetadataQuery string
-	SelectMigrationVersionsQuery string
-	SelectMigrationChecksumsQuery string
+	InsertMetadataQuery string `yaml:"insertMetadataQuery"`
+	SelectMigrationVersionsQuery string `yaml:"selectMigrationVersionsQuery"`
+	SelectMigrationChecksumsQuery string `yaml:"selectMigrationChecksumsQuery"`
 }
 
 type MigrationConfig struct {
