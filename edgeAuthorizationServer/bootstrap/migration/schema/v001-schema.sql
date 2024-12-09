@@ -17,6 +17,3 @@ CREATE TABLE IF NOT EXISTS "users" (
         (json->>'updatedBy')::varchar
     ) STORED NOT NULL
 );
-
--- Create indexes
-CREATE INDEX user_entity_name_index ON users(name);

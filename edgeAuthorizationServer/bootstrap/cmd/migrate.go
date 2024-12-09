@@ -12,6 +12,11 @@ import (
 )
 
 func run() {
+	config := getConfigModel()
+	migrations.ExecMigration(config.Migration, config.Database)
+}
+
+func getConfigModel() models.Config {
 	path := getConfigFile()
 	raw_confg, err := os.ReadFile(path)
 	mapper := getEnvVarMapper()
@@ -27,7 +32,7 @@ func run() {
 		panic(err)
 	}
 
-	migrations.ExecMigration(config.Migration, config.Database)
+	return config
 }
 
 func getConfigFile() string {
@@ -36,7 +41,15 @@ func getConfigFile() string {
 		panic(err)
 	}
 	parent := filepath.Dir(root)
-	return filepath.Join(parent, "config/config.yaml")
+
+	var val string
+	var found bool
+	val, found = os.LookupEnv("EDGE_AUTHORIZATION_SERVER_CONFIG_FILE_PATH")
+	if !found {
+		val = "config/config.yaml"
+	}
+
+	return filepath.Join(parent, val)
 }
 
 func getEnvVarMapper() func(string) string {
