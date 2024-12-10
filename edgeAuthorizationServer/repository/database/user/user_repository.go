@@ -50,6 +50,6 @@ func (u *UserRepository) List(ctx context.Context) ([]generated.IEntity, error) 
 	return nil, nil
 }
 
-func (u UserRepository) getClient() *sqlx.DB {
+func (u *UserRepository) GetClient() *sqlx.DB {
 	return u.client
 }

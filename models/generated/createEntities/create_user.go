@@ -63,3 +63,7 @@ func (c *CreateUser) ValidatePasswordCharacters() error {
 	return nil
 }
 
+func (c CreateUser) GetName() string {
+	return c.Name
+}
+

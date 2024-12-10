@@ -21,5 +21,5 @@ type IDatabaseRepository interface {
 
 	List(ctx context.Context) ([]generated.IEntity, error)
 
-	getClient() *sqlx.DB
+	GetClient() *sqlx.DB
 }

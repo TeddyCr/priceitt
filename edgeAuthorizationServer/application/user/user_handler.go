@@ -9,20 +9,32 @@ import (
 	"github.com/TeddyCr/priceitt/models/generated/auth"
 	"github.com/TeddyCr/priceitt/models/generated/createEntities"
 	"github.com/TeddyCr/priceitt/models/generated/entities"
-	"github.com/fernet/fernet-go"
+	goFernet "github.com/fernet/fernet-go"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/argon2"
 
+	"priceitt.xyz/edgeAuthorizationServer/application"
+	"priceitt.xyz/edgeAuthorizationServer/infrastructure/fernet"
 	dbRepo "priceitt.xyz/edgeAuthorizationServer/repository/database"
 )
 
-type UserHandler struct {
-	DatabaseRepository dbRepo.IDatabaseRepository
-	FernetKey []*fernet.Key
-	Salt []byte
+func NewUserHandler(databaseRepository dbRepo.IDatabaseRepository) application.IHandler {
+	return UserHandler{
+		DatabaseRepository: databaseRepository,
+		fernetInstance: fernet.GetInstance(),
+	}
 }
 
-func (c *UserHandler) Create(ctx context.Context, createUser createEntities.CreateUser) (generated.IEntity, error) {
+type UserHandler struct {
+	DatabaseRepository dbRepo.IDatabaseRepository
+	fernetInstance *fernet.Fernet
+}
+
+func (c UserHandler) Create(ctx context.Context, createEntity generated.ICreateEntity) (generated.IEntity, error) {
+	createUser, ok := createEntity.(createEntities.CreateUser)
+	if !ok {
+		log.Fatalf("failed to cast to createEntities.CreateUser")
+	}
 	err := createUser.ValidatePassword()
 	if err != nil {
 		log.Fatalf("failed to validate password: %v", err)
@@ -30,12 +42,12 @@ func (c *UserHandler) Create(ctx context.Context, createUser createEntities.Crea
 	}
 	hashedPassword := argon2.IDKey(
 		[]byte(createUser.Password),
-		c.Salt,
+		c.fernetInstance.Salt,
 		1,
 		64 * 1024,
 		4,
 		32)
-	token, err := fernet.EncryptAndSign(hashedPassword, c.FernetKey[0])
+	token, err := goFernet.EncryptAndSign(hashedPassword, c.fernetInstance.Key[0])
 	if err != nil {
 		log.Fatalf("failed to encrypt password: %v", err)
 		return nil, err
@@ -45,7 +57,11 @@ func (c *UserHandler) Create(ctx context.Context, createUser createEntities.Crea
 	return user, nil
 }
 
-func (c UserHandler) getUser(createUser createEntities.CreateUser, encryptedPassword []byte) entities.User {
+func (c UserHandler) getUser(createEntity generated.ICreateEntity, encryptedPassword []byte) generated.IEntity {
+	createUser, ok := createEntity.(createEntities.CreateUser)
+	if !ok {
+		log.Fatalf("failed to cast to createEntities.CreateUser")
+	}
 	now := time.Now()
 	return entities.User{
 		BaseEntity: entities.BaseEntity{

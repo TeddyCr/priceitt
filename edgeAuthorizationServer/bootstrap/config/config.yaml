@@ -1,7 +1,10 @@
 server:
+  type: ${EDGE_AUTHORIZATION_SERVER_TYPE:-http}
   port: ${EDGE_AUTHORIZATION_SERVER_PORT:-8000}
   env: ${EDGE_AUTHORIZATION_SERVER_ENV:-dev}
   version: ${EDGE_AUTHORIZATION_SERVER_VERSION:-v0}
+  # certificate: ${EDGE_AUTHORIZATION_SERVER_CERTIFICATE:-}
+  # key: ${EDGE_AUTHORIZATION_SERVER_KEY:-}
 
 logging:
   level: ${EDGE_AUTHORIZATION_SERVER_LOG_LEVEL:-DEBUG}
@@ -20,3 +23,7 @@ migration:
     selectMigrationChecksumsQuery: "SELECT checksum FROM DATABASE_MIGRATION_LOGS"
   force: false
   checkIntegrity: false
+
+fernet:
+  key: ${EDGE_AUTHORIZATION_SERVER_FERNET_KEY:-jwEMNW7F-XYPNe4s9jZRfv7Ra9rwMBgV-gDP4NxjAXA=}
+  salt: ${EDGE_AUTHORIZATION_SERVER_SALT:-salt}

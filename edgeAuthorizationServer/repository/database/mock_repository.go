@@ -34,6 +34,6 @@ func (m MockRepository) List(ctx context.Context) ([]generated.IEntity, error) {
 	return nil, nil
 }
 
-func (m MockRepository) getClient() *sqlx.DB {
+func (m MockRepository) GetClient() *sqlx.DB {
 	return nil
 }

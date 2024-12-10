@@ -1,7 +1,11 @@
 package application
 
-import "github.com/TeddyCr/priceitt/models/generated"
+import (
+	"context"
+
+	"github.com/TeddyCr/priceitt/models/generated"
+)
 
 type IHandler interface {
-	Create(create generated.ICreateEntity) (generated.IEntity, error)
+	Create(ctx context.Context, create generated.ICreateEntity) (generated.IEntity, error)
 }
