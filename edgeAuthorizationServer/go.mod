@@ -5,8 +5,8 @@ go 1.22
 toolchain go1.22.7
 
 require (
-	github.com/TeddyCr/priceitt/models v0.0.1-alpha.1
-	github.com/TeddyCr/priceitt/utils v0.0.1-alpha.1
+	github.com/TeddyCr/priceitt/models v0.0.1-alpha.2
+	github.com/TeddyCr/priceitt/utils v0.0.1-alpha.2
 	github.com/fernet/fernet-go v0.0.0-20240119011108-303da6aec611
 	github.com/go-chi/chi/v5 v5.1.0
 	github.com/go-chi/httplog/v2 v2.1.1
