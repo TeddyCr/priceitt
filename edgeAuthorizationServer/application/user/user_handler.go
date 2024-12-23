@@ -13,7 +13,7 @@ import (
 	"github.com/google/uuid"
 	"golang.org/x/crypto/argon2"
 
-	"priceitt.github.com/TeddyCr/priceitt/edgeAuthorizationServer/application"
+	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/application"
 	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/infrastructure/fernet"
 	dbRepo "github.com/TeddyCr/priceitt/edgeAuthorizationServer/repository/database"
 )
