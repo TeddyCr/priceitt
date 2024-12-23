@@ -12,6 +12,5 @@ $RECYCLE.BIN/
 # Linux
 *~
 
-# go
-go.work
-go.work.*
+# Docker
+development/docker-volume/

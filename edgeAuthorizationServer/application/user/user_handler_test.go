@@ -4,13 +4,15 @@ import (
 	"context"
 	"testing"
 
+	"github.com/TeddyCr/priceitt/models/config"
 	"github.com/TeddyCr/priceitt/models/generated/auth"
 	"github.com/TeddyCr/priceitt/models/generated/createEntities"
 	"github.com/TeddyCr/priceitt/models/generated/entities"
-	"github.com/fernet/fernet-go"
+	goFernet "github.com/fernet/fernet-go"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/crypto/argon2"
-	"priceitt.xyz/edgeAuthorizationServer/repository"
+	"github.com/TeddyCr/priceitt/infrastructure/fernet"
+	repository "github.com/TeddyCr/priceitt/repository/database"
 )
 
 const (
@@ -20,19 +22,21 @@ const (
 func TestUserHandler_Create(t *testing.T) {
 	password := "passWord12345!!!"
 	mockedRepository := repository.MockRepository{}
-    fernetKey := fernet.MustDecodeKeys(fernetString)
 	salt := []byte("salt")
-	userHandler := UserHandler{
-		_database_repository: mockedRepository,
-		fernetKey:   fernetKey,
-		salt:        salt,
+	fernetConfig := config.FernetConfig{
+		Key:  fernetString,
+		Salt: string(salt),
 	}
+	fernet.Initialize(fernetConfig)
+
+	userHandler := NewUserHandler(mockedRepository)
 
 	createUser := createEntities.CreateUser{
-		Name:     "test",
-		Email:    "example@email.com",
-		Password: password,
-		ConfirmPassword:  password,
+		Name:            "test",
+		Email:           "example@email.com",
+		AuthType:        "basic",
+		Password:        password,
+		ConfirmPassword: password,
 	}
 	ctx := context.Background()
 	user, err := userHandler.Create(ctx, createUser)
@@ -49,8 +53,8 @@ func TestUserHandler_Create(t *testing.T) {
 }
 
 func validatePassword(password string, encryptedPassword string) bool {
-	fernetKey:= fernet.MustDecodeKeys(fernetString)
-	decryptedPassword := fernet.VerifyAndDecrypt([]byte(encryptedPassword), 0, fernetKey)
-	hashedPassword := argon2.IDKey([]byte(password),[]byte("salt"),1,64 * 1024,4,32)
+	fernetKey := goFernet.MustDecodeKeys(fernetString)
+	decryptedPassword := goFernet.VerifyAndDecrypt([]byte(encryptedPassword), 0, fernetKey)
+	hashedPassword := argon2.IDKey([]byte(password), []byte("salt"), 1, 64*1024, 4, 32)
 	return string(hashedPassword) == string(decryptedPassword)
 }

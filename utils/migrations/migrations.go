@@ -78,6 +78,9 @@ func (m *Migrate) getMigrationFiles(path string) []string {
 	if err != nil {
 		log.Fatalf("Error retrieving migration files: #%v", err)
 	}
+	if len(migrationFiles) == 0 {
+		log.Fatalf("No migration files found at path: %s", root + path)
+	}
 	slices.Sort(migrationFiles)
 	return migrationFiles
 }
@@ -191,7 +194,7 @@ func (m *Migrate) writeMigrationMetadata(migrationMetadata models.MigrationMetad
 	}
 
 	if !exists {
-		query = m.migrationConfig.MetadataQueries.InsertMetadataQuery // `INSERT INTO "DATABASE_MIGRATION_LOGS" (version, query, checksum, execution_time) VALUES ($1, $2, $3, $4)`
+		query = m.migrationConfig.MetadataQueries.InsertMetadataQuery
 		_, err := m.db.Exec(query, migrationMetadata.Version, migrationMetadata.Query, migrationMetadata.Checksum, migrationMetadata.ExecutionTime)
 		if err != nil {
 			log.Fatalf("Error writing migration metadata: #%v", err)

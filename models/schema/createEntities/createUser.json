@@ -14,6 +14,11 @@
             "format": "email",
             "description": "The email of the user"
         },
+        "authType": {
+            "type": "string",
+            "description": "The type of authentication",
+            "const": "basic"
+        },
         "password": {
             "type": "string",
             "description": "The password of the user",
@@ -28,5 +33,5 @@
         }
     },
     "additionalProperties": false,
-    "required": ["name", "email"]
+    "required": ["name", "email", "authType"]
 }

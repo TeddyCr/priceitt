@@ -7,6 +7,8 @@ import (
 	"github.com/TeddyCr/priceitt/models"
 	"github.com/TeddyCr/priceitt/models/generated"
 	"github.com/jmoiron/sqlx"
+
+	_ "github.com/lib/pq"           // postgres driver
 )
 
 func Connect(dbConfig models.DatabaseConfig) *sqlx.DB {

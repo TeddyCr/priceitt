@@ -1,30 +1,22 @@
 package postgres
 
 import (
-	"log"
-
+	"github.com/TeddyCr/priceitt/models"
+	dbUtil "github.com/TeddyCr/priceitt/utils/database"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
-	"github.com/mitchellh/mapstructure"
-	"github.com/TeddyCr/priceitt/models"
-	"github.com/TeddyCr/priceitt/utils/database"
+	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/infrastructure/database"
 )
 
 type PersistencePostgres struct {
 	client *sqlx.DB
 }
 
-func (PersistencePostgres) Initialize(config map[string]interface{}) (*PersistencePostgres, error) {
-	var dbConfig models.DatabaseConfig
-	err := mapstructure.Decode(config, &dbConfig)
-	if err != nil {
-		log.Panic(err)
-	}
-
-	client := database.Connect(dbConfig)
-	return &PersistencePostgres{client: client}, nil
+func (PersistencePostgres) Initialize(config models.DatabaseConfig) (database.IPersistenceDatabase, error) {
+	client := dbUtil.Connect(config)
+	return PersistencePostgres{client: client}, nil
 }
 
-func (p *PersistencePostgres) GetClient() *sqlx.DB {
+func (p PersistencePostgres) GetClient() *sqlx.DB {
 	return p.client
 }
