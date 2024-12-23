@@ -1,4 +1,4 @@
-module priceitt.xyz/edgeAuthorizationServer
+module github.com/TeddyCr/priceitt/edgeAuthorizationServer
 
 go 1.22
 

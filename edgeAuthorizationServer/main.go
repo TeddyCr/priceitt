@@ -13,17 +13,16 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/httplog/v2"
 	"gopkg.in/yaml.v2"
-	"priceitt.xyz/edgeAuthorizationServer/infrastructure/database/postgres"
-	"priceitt.xyz/edgeAuthorizationServer/infrastructure/fernet"
-	"priceitt.xyz/edgeAuthorizationServer/models"
-	"priceitt.xyz/edgeAuthorizationServer/resource"
+	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/models"
+	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/resource"
+	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/infrastructure/database/postgres"
+	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/infrastructure/fernet"
 )
 
 // WHat do I need to do here?
 // 1. I need to register a repository. We should have a repository package.
 // 2. I need to register my resources.
 // 3. I need model my entities, create my serializers, and create my handlers (business logic).
-
 
 func main() {
 	config := getConfig()
@@ -34,16 +33,16 @@ func main() {
 	r.Use(httplog.RequestLogger(logger))
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.RequestID)
-  	r.Use(middleware.RealIP)
+	r.Use(middleware.RealIP)
 	r.Use(middleware.Timeout(60 * time.Second))
-	
+
 	mountRoutes(r, config)
 	fernet.Initialize(config.Fernet)
-	
+
 	if config.Server.Type == "http" {
 		http.ListenAndServe(":"+strconv.Itoa(config.Server.Port), r)
 	} else {
-		http.ListenAndServeTLS(":"+strconv.Itoa(config.Server.Port), config.Server.Certificate, config.Server.Key, r) 
+		http.ListenAndServeTLS(":"+strconv.Itoa(config.Server.Port), config.Server.Certificate, config.Server.Key, r)
 	}
 }
 
@@ -58,14 +57,14 @@ func mountRoutes(r chi.Router, config models.Config) {
 func getLoggerConfig(config models.Config) *httplog.Logger {
 	return httplog.NewLogger("edgeAuthorizationServer", httplog.Options{
 		LogLevel: slog.LevelDebug,
-		JSON: true,
-		Concise: true,
+		JSON:     true,
+		Concise:  true,
 		Tags: map[string]string{
-			"env": config.Logging.Level,
+			"env":     config.Logging.Level,
 			"version": config.Server.Version,
 		},
-		TimeFieldFormat:  time.RFC3339,
-		RequestHeaders: true,
+		TimeFieldFormat: time.RFC3339,
+		RequestHeaders:  true,
 		ResponseHeaders: true,
 	})
 }
@@ -117,7 +116,7 @@ func getEnvVarMapper() func(string) string {
 
 		val, ok := os.LookupEnv(envName)
 		if !ok {
-			// Postgres uses $ as a placeholder for parameters i.e `$1, $2, etc.` 
+			// Postgres uses $ as a placeholder for parameters i.e `$1, $2, etc.`
 			if len(defaultValue) < 1 {
 				return "$" + envName
 			}

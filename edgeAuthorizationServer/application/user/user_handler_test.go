@@ -11,8 +11,8 @@ import (
 	goFernet "github.com/fernet/fernet-go"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/crypto/argon2"
-	"priceitt.xyz/edgeAuthorizationServer/infrastructure/fernet"
-	repository "priceitt.xyz/edgeAuthorizationServer/repository/database"
+	"github.com/TeddyCr/priceitt/infrastructure/fernet"
+	repository "github.com/TeddyCr/priceitt/repository/database"
 )
 
 const (
@@ -32,11 +32,11 @@ func TestUserHandler_Create(t *testing.T) {
 	userHandler := NewUserHandler(mockedRepository)
 
 	createUser := createEntities.CreateUser{
-		Name:     "test",
-		Email:    "example@email.com",
-		AuthType: "basic",
-		Password: password,
-		ConfirmPassword:  password,
+		Name:            "test",
+		Email:           "example@email.com",
+		AuthType:        "basic",
+		Password:        password,
+		ConfirmPassword: password,
 	}
 	ctx := context.Background()
 	user, err := userHandler.Create(ctx, createUser)
@@ -53,8 +53,8 @@ func TestUserHandler_Create(t *testing.T) {
 }
 
 func validatePassword(password string, encryptedPassword string) bool {
-	fernetKey:= goFernet.MustDecodeKeys(fernetString)
+	fernetKey := goFernet.MustDecodeKeys(fernetString)
 	decryptedPassword := goFernet.VerifyAndDecrypt([]byte(encryptedPassword), 0, fernetKey)
-	hashedPassword := argon2.IDKey([]byte(password),[]byte("salt"),1,64 * 1024,4,32)
+	hashedPassword := argon2.IDKey([]byte(password), []byte("salt"), 1, 64*1024, 4, 32)
 	return string(hashedPassword) == string(decryptedPassword)
 }

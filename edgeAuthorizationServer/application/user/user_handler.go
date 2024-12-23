@@ -13,21 +13,21 @@ import (
 	"github.com/google/uuid"
 	"golang.org/x/crypto/argon2"
 
-	"priceitt.xyz/edgeAuthorizationServer/application"
-	"priceitt.xyz/edgeAuthorizationServer/infrastructure/fernet"
-	dbRepo "priceitt.xyz/edgeAuthorizationServer/repository/database"
+	"priceitt.github.com/TeddyCr/priceitt/edgeAuthorizationServer/application"
+	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/infrastructure/fernet"
+	dbRepo "github.com/TeddyCr/priceitt/edgeAuthorizationServer/repository/database"
 )
 
 func NewUserHandler(databaseRepository dbRepo.IDatabaseRepository) application.IHandler {
 	return UserHandler{
 		DatabaseRepository: databaseRepository,
-		fernetInstance: fernet.GetInstance(),
+		fernetInstance:     fernet.GetInstance(),
 	}
 }
 
 type UserHandler struct {
 	DatabaseRepository dbRepo.IDatabaseRepository
-	fernetInstance *fernet.Fernet
+	fernetInstance     *fernet.Fernet
 }
 
 func (c UserHandler) Create(ctx context.Context, createEntity generated.ICreateEntity) (generated.IEntity, error) {
@@ -44,7 +44,7 @@ func (c UserHandler) Create(ctx context.Context, createEntity generated.ICreateE
 		[]byte(createUser.Password),
 		c.fernetInstance.Salt,
 		1,
-		64 * 1024,
+		64*1024,
 		4,
 		32)
 	token, err := goFernet.EncryptAndSign(hashedPassword, c.fernetInstance.Key[0])
@@ -65,14 +65,14 @@ func (c UserHandler) getUser(createEntity generated.ICreateEntity, encryptedPass
 	now := time.Now()
 	return entities.User{
 		BaseEntity: entities.BaseEntity{
-			ID: uuid.New(),
-			Name: createUser.Name,
+			ID:        uuid.New(),
+			Name:      createUser.Name,
 			CreatedAt: now,
 			UpdatedAt: now,
 		},
 		Email: createUser.Email,
 		AuthenticationMechanism: auth.Basic{
-			Type: "basic",
+			Type:     "basic",
 			Password: string(encryptedPassword),
 		},
 	}

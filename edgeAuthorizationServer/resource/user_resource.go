@@ -4,10 +4,10 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"priceitt.xyz/edgeAuthorizationServer/application"
-	"priceitt.xyz/edgeAuthorizationServer/application/user"
-	"priceitt.xyz/edgeAuthorizationServer/infrastructure/database"
-	usr "priceitt.xyz/edgeAuthorizationServer/repository/database/user"
+	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/application"
+	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/application/user"
+	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/infrastructure/database"
+	usr "github.com/TeddyCr/priceitt/edgeAuthorizationServer/repository/database/user"
 )
 
 func NewUserResource(databasePersitence database.IPersistenceDatabase) IUserResource {

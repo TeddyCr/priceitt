@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"gopkg.in/yaml.v2"
+	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/models"
 
-	"priceitt.xyz/edgeAuthorizationServer/models"
 	"github.com/TeddyCr/priceitt/utils/migrations"
 )
 
@@ -63,7 +63,7 @@ func getEnvVarMapper() func(string) string {
 
 		val, ok := os.LookupEnv(envName)
 		if !ok {
-			// Postgres uses $ as a placeholder for parameters i.e `$1, $2, etc.` 
+			// Postgres uses $ as a placeholder for parameters i.e `$1, $2, etc.`
 			if len(defaultValue) < 1 {
 				return "$" + envName
 			}

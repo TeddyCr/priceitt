@@ -7,8 +7,8 @@ import (
 	"github.com/TeddyCr/priceitt/models/generated"
 	utilDB "github.com/TeddyCr/priceitt/utils/database"
 	"github.com/jmoiron/sqlx"
-	"priceitt.xyz/edgeAuthorizationServer/infrastructure/database"
-	repository "priceitt.xyz/edgeAuthorizationServer/repository/database"
+	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/infrastructure/database"
+	repository "github.com/TeddyCr/priceitt/edgeAuthorizationServer/repository/database"
 )
 
 func NewUserRepository(dbContext database.IPersistenceDatabase) *UserRepository {

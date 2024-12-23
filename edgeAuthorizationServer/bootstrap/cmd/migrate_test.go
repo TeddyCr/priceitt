@@ -7,7 +7,7 @@ import (
 	"github.com/TeddyCr/priceitt/utils/database"
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
-	"priceitt.xyz/edgeAuthorizationServer/test"
+	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/test"
 )
 
 func TestMain(m *testing.M) {
@@ -18,7 +18,6 @@ func TestMain(m *testing.M) {
 	m.Run()
 	test.TearDown(handlers)
 }
-
 
 func TestMigrate(t *testing.T) {
 	run()
