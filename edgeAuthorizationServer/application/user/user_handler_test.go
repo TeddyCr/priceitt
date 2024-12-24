@@ -11,8 +11,8 @@ import (
 	goFernet "github.com/fernet/fernet-go"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/crypto/argon2"
-	"github.com/TeddyCr/priceitt/infrastructure/fernet"
-	repository "github.com/TeddyCr/priceitt/repository/database"
+	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/infrastructure/fernet"
+	repository "github.com/TeddyCr/priceitt/edgeAuthorizationServer/repository/database"
 )
 
 const (
@@ -31,7 +31,7 @@ func TestUserHandler_Create(t *testing.T) {
 
 	userHandler := NewUserHandler(mockedRepository)
 
-	createUser := createEntities.CreateUser{
+	createUser := &createEntities.CreateUser{
 		Name:            "test",
 		Email:           "example@email.com",
 		AuthType:        "basic",
@@ -46,7 +46,7 @@ func TestUserHandler_Create(t *testing.T) {
 	if user == nil {
 		t.Fatalf("user is nil")
 	}
-	userEntity, _ := user.(entities.User)
+	userEntity, _ := user.(*entities.User)
 	auth, _ := userEntity.AuthenticationMechanism.(auth.Basic)
 	assert.True(t, validatePassword(password, auth.Password))
 	assert.NotNil(t, userEntity.ID)

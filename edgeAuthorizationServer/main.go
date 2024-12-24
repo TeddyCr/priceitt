@@ -36,8 +36,8 @@ func main() {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Timeout(60 * time.Second))
 
-	mountRoutes(r, config)
 	fernet.Initialize(config.Fernet)
+	mountRoutes(r, config)
 
 	if config.Server.Type == "http" {
 		http.ListenAndServe(":"+strconv.Itoa(config.Server.Port), r)

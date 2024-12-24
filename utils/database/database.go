@@ -4,11 +4,12 @@ import (
 	"context"
 	"log"
 
+	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/serializer"
 	"github.com/TeddyCr/priceitt/models"
 	"github.com/TeddyCr/priceitt/models/generated"
 	"github.com/jmoiron/sqlx"
 
-	_ "github.com/lib/pq"           // postgres driver
+	_ "github.com/lib/pq" // postgres driver
 )
 
 func Connect(dbConfig models.DatabaseConfig) *sqlx.DB {
@@ -28,7 +29,7 @@ func PerformEntityQuery(ctx context.Context, db *sqlx.DB, query string, entity g
 		return err
 	}
 	defer conn.Close()
-	jsonString, err := entity.JsonToString()
+	jsonString, err := serializer.JsonToString(entity)
 	if err != nil {
 		return err
 	}

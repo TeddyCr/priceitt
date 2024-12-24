@@ -21,7 +21,7 @@ migration:
     insertMetadataQuery: "INSERT INTO DATABASE_MIGRATION_LOGS (version, query, checksum, execution_time) VALUES ($1, $2, $3, $4)"
     selectMigrationVersionsQuery: "SELECT version FROM DATABASE_MIGRATION_LOGS"
     selectMigrationChecksumsQuery: "SELECT checksum FROM DATABASE_MIGRATION_LOGS"
-  force: false
+  force: true
   checkIntegrity: false
 
 fernet:

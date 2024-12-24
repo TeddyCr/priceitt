@@ -1,7 +1,7 @@
 package generated
 
 import (
-	"time"
+	"net/http"
 
 	"github.com/google/uuid"
 )
@@ -11,8 +11,9 @@ type IEntity interface {
 	GetName() string
 	GetDisplayName() string
 	GetDescription() string
-	GetUpdatedAt() time.Time
-	GetCreatedAt() time.Time
+	GetUpdatedAt() int64
+	GetCreatedAt() int64
 	ToJson() ([]byte, error)
-	JsonToString() (string, error)
+	Bind(r *http.Request) error
+	Render(w http.ResponseWriter, r *http.Request) error
 }

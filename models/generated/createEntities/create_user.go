@@ -1,6 +1,9 @@
 package createEntities
 
-import "errors"
+import (
+	"errors"
+	"net/http"
+)
 
 type CreateUser struct {
 	Name string `json:"name"`
@@ -65,5 +68,15 @@ func (c *CreateUser) ValidatePasswordCharacters() error {
 
 func (c CreateUser) GetName() string {
 	return c.Name
+}
+
+func (c *CreateUser) Bind(r *http.Request) error {
+	return nil
+}
+
+func (c *CreateUser) Render(w http.ResponseWriter, r *http.Request) error {
+	c.Password = ""
+	c.ConfirmPassword = ""
+	return nil
 }
 

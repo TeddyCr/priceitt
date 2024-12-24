@@ -3,11 +3,14 @@ package resource
 import (
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/application"
+	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/errors"
 	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/application/user"
 	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/infrastructure/database"
 	usr "github.com/TeddyCr/priceitt/edgeAuthorizationServer/repository/database/user"
+	"github.com/TeddyCr/priceitt/models/generated/createEntities"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/render"
 )
 
 func NewUserResource(databasePersitence database.IPersistenceDatabase) IUserResource {
@@ -30,5 +33,18 @@ func (ur userResource) Routes() chi.Router {
 }
 
 func (ur userResource) CreateUser(w http.ResponseWriter, r *http.Request) {
-	ur._user_handler.Create(r.Context(), nil)
+	createUser := &createEntities.CreateUser{}
+	if err := render.Bind(r, createUser); err != nil {
+		render.Render(w, r, errors.ErrInvalidRequest(err))
+		return
+	}
+
+	user, err := ur._user_handler.Create(r.Context(), createUser)
+	if err != nil {
+		render.Render(w, r, errors.ErrInternalServer(err))
+		return
+	}
+	render.Status(r, http.StatusCreated)
+	render.Render(w, r, user)
+	return
 }

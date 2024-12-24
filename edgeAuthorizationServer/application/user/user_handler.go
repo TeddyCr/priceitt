@@ -2,7 +2,7 @@ package user
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"time"
 
 	"github.com/TeddyCr/priceitt/models/generated"
@@ -31,14 +31,13 @@ type UserHandler struct {
 }
 
 func (c UserHandler) Create(ctx context.Context, createEntity generated.ICreateEntity) (generated.IEntity, error) {
-	createUser, ok := createEntity.(createEntities.CreateUser)
+	createUser, ok := createEntity.(*createEntities.CreateUser)
 	if !ok {
-		log.Fatalf("failed to cast to createEntities.CreateUser")
+		panic("failed to cast to createEntities.CreateUser")
 	}
 	err := createUser.ValidatePassword()
 	if err != nil {
-		log.Fatalf("failed to validate password: %v", err)
-		return nil, err
+		panic(fmt.Sprintf("failed to validate password: %v", err))
 	}
 	hashedPassword := argon2.IDKey(
 		[]byte(createUser.Password),
@@ -49,27 +48,23 @@ func (c UserHandler) Create(ctx context.Context, createEntity generated.ICreateE
 		32)
 	token, err := goFernet.EncryptAndSign(hashedPassword, c.fernetInstance.Key[0])
 	if err != nil {
-		log.Fatalf("failed to encrypt password: %v", err)
-		return nil, err
+		panic(fmt.Sprintf("failed to encrypt password: %v", err))
 	}
 	user := c.getUser(createUser, token)
-	c.DatabaseRepository.Create(ctx, user)
+	err = c.DatabaseRepository.Create(ctx, user)
+	if err != nil {
+		return nil, err
+	}
 	return user, nil
 }
 
-func (c UserHandler) getUser(createEntity generated.ICreateEntity, encryptedPassword []byte) generated.IEntity {
-	createUser, ok := createEntity.(createEntities.CreateUser)
-	if !ok {
-		log.Fatalf("failed to cast to createEntities.CreateUser")
-	}
-	now := time.Now()
-	return entities.User{
-		BaseEntity: entities.BaseEntity{
-			ID:        uuid.New(),
-			Name:      createUser.Name,
-			CreatedAt: now,
-			UpdatedAt: now,
-		},
+func (c UserHandler) getUser(createUser *createEntities.CreateUser, encryptedPassword []byte) generated.IEntity {
+	now := time.Now().UnixMilli()
+	return &entities.User{
+		ID:        uuid.New(),
+		Name:      createUser.Name,
+		CreatedAt: now,
+		UpdatedAt: now,
 		Email: createUser.Email,
 		AuthenticationMechanism: auth.Basic{
 			Type:     "basic",

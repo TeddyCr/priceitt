@@ -5,7 +5,7 @@ go 1.22
 toolchain go1.22.7
 
 require (
-	github.com/TeddyCr/priceitt/models v0.0.1-alpha.3
+	github.com/TeddyCr/priceitt/models v0.0.1-alpha.2
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/lib/pq v1.10.9
 	github.com/mattn/go-sqlite3 v1.14.22
