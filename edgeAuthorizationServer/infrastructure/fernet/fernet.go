@@ -10,7 +10,7 @@ import (
 var lock = &sync.Mutex{}
 
 type Fernet struct {
-	Key []*fernet.Key
+	Key  []*fernet.Key
 	Salt []byte
 }
 

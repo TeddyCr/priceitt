@@ -6,7 +6,7 @@ type BaseAuthMechanism interface {
 
 type Basic struct {
 	Password string `json:"password"`
-	Type string `json:"type"`
+	Type     string `json:"type"`
 }
 
 func (b Basic) GetAuthType() string {

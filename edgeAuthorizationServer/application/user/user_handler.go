@@ -65,7 +65,7 @@ func (c UserHandler) getUser(createUser *createEntities.CreateUser, encryptedPas
 		Name:      createUser.Name,
 		CreatedAt: now,
 		UpdatedAt: now,
-		Email: createUser.Email,
+		Email:     createUser.Email,
 		AuthenticationMechanism: auth.Basic{
 			Type:     "basic",
 			Password: string(encryptedPassword),

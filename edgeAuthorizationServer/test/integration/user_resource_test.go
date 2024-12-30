@@ -40,7 +40,7 @@ func TestCreateUser(t *testing.T) {
 	var user entities.User
 	err = json.Unmarshal(resp, &user)
 	require.NoError(t, err)
-	
+
 	assert.NotNil(t, user.ID)
 	assert.Equal(t, "John Doe", user.Name)
 	assert.NotEqual(t, 0, user.CreatedAt)
@@ -48,4 +48,3 @@ func TestCreateUser(t *testing.T) {
 	authMechanism := user.AuthenticationMechanism.(map[string]interface{})
 	assert.Equal(t, "", authMechanism["password"])
 }
-

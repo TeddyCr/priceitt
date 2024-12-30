@@ -9,14 +9,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/infrastructure/database/postgres"
+	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/infrastructure/fernet"
+	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/models"
+	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/resource"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/httplog/v2"
 	"gopkg.in/yaml.v2"
-	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/models"
-	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/resource"
-	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/infrastructure/database/postgres"
-	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/infrastructure/fernet"
 )
 
 func main() {
@@ -35,9 +35,15 @@ func main() {
 	mountRoutes(r, config)
 
 	if config.Server.Type == "http" {
-		http.ListenAndServe(":"+strconv.Itoa(config.Server.Port), r)
+		err := http.ListenAndServe(":"+strconv.Itoa(config.Server.Port), r)
+		if err != nil {
+			panic(err)
+		}
 	} else {
-		http.ListenAndServeTLS(":"+strconv.Itoa(config.Server.Port), config.Server.Certificate, config.Server.Key, r)
+		err := http.ListenAndServeTLS(":"+strconv.Itoa(config.Server.Port), config.Server.Certificate, config.Server.Key, r)
+		if err != nil {
+			panic(err)
+		}
 	}
 }
 

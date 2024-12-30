@@ -8,16 +8,16 @@ type MigrationMetadata struct {
 }
 
 type MigrationMetadataQueries struct {
-	InsertMetadataQuery string `yaml:"insertMetadataQuery"`
-	SelectMigrationVersionsQuery string `yaml:"selectMigrationVersionsQuery"`
+	InsertMetadataQuery           string `yaml:"insertMetadataQuery"`
+	SelectMigrationVersionsQuery  string `yaml:"selectMigrationVersionsQuery"`
 	SelectMigrationChecksumsQuery string `yaml:"selectMigrationChecksumsQuery"`
 }
 
 type MigrationConfig struct {
-	SchemaPath string `yaml:"schemaPath"`
-	DataPath   string `yaml:"dataPath"`
-	MetadataPath string `yaml:"metadataPath"`
+	SchemaPath      string                   `yaml:"schemaPath"`
+	DataPath        string                   `yaml:"dataPath"`
+	MetadataPath    string                   `yaml:"metadataPath"`
 	MetadataQueries MigrationMetadataQueries `yaml:"metadataQueries"`
-	Force 	   bool `yaml:"force"`
-	CheckIntegrity bool `yaml:"checkIntegrity"`
+	Force           bool                     `yaml:"force"`
+	CheckIntegrity  bool                     `yaml:"checkIntegrity"`
 }

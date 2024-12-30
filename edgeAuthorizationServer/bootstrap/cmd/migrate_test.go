@@ -4,10 +4,10 @@ import (
 	"os"
 	"testing"
 
+	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/test"
 	"github.com/TeddyCr/priceitt/utils/database"
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
-	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/test"
 )
 
 func TestMain(m *testing.M) {
@@ -44,7 +44,10 @@ func validateMigrations(db *sqlx.DB, t *testing.T) {
 	tables := []string{}
 	for rows.Next() {
 		var tableName string
-		rows.Scan(&tableName)
+		err := rows.Scan(&tableName)
+		if err != nil {
+			t.Error(err)
+		}
 		tables = append(tables, tableName)
 	}
 	assert.ElementsMatch(t, expectedTableNames, tables)

@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"gopkg.in/yaml.v2"
 	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/models"
+	"gopkg.in/yaml.v2"
 
 	"github.com/TeddyCr/priceitt/utils/migrations"
 )

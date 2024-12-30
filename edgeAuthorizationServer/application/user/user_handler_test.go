@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/infrastructure/fernet"
+	repository "github.com/TeddyCr/priceitt/edgeAuthorizationServer/repository/database"
 	"github.com/TeddyCr/priceitt/models/config"
 	"github.com/TeddyCr/priceitt/models/generated/auth"
 	"github.com/TeddyCr/priceitt/models/generated/createEntities"
@@ -11,8 +13,6 @@ import (
 	goFernet "github.com/fernet/fernet-go"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/crypto/argon2"
-	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/infrastructure/fernet"
-	repository "github.com/TeddyCr/priceitt/edgeAuthorizationServer/repository/database"
 )
 
 const (

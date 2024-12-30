@@ -22,14 +22,18 @@ func StartApplication() tc.ComposeStack {
 		panic(err)
 	}
 
-    ctx := context.Background()
-	compose.Up(ctx, tc.Wait(true))
+	ctx := context.Background()
+	err = compose.Up(ctx, tc.Wait(true))
+	if err != nil {
+		panic(err)
+	}
 	return compose
 }
 
 func StopApplication(compose tc.ComposeStack) {
 	ctx := context.Background()
-	compose.Down(ctx, tc.RemoveOrphans(true), tc.RemoveImagesLocal, tc.RemoveVolumes(true))
+	err := compose.Down(ctx, tc.RemoveOrphans(true), tc.RemoveImagesLocal, tc.RemoveVolumes(true))
+	if err != nil {
+		panic(err)
+	}
 }
-
-
