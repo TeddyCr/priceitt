@@ -1,6 +1,3 @@
-# Use postgres/example user/password credentials
-version: '3.9'
-
 services:
   db:
     image: postgres
@@ -11,7 +8,11 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./docker-volume/db-data-postgres:/var/lib/postgresql/data
+      - type: volume
+        source: db-data
+        target: /var/lib/postgresql/data
+        volume:
+          nocopy: true
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
@@ -23,7 +24,45 @@ services:
       retries: 5
     networks:
       - local_app_net
+
+  migrate:
+    image: migration
+    build:
+      context: ../
+      dockerfile: ./bootstrap/Dockerfile
+    environment:
+      - EDGE_AUTHORIZATION_SERVER_DATABASE_CONNECTION_STRING=postgresql://user:password@db:5432/edge_authorization_server?sslmode=disable
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - local_app_net
+
+  app:
+    image: app
+    build:
+      context: ../../
+      dockerfile: ./edgeAuthorizationServer/development/Dockerfile
+      no_cache: true
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      - EDGE_AUTHORIZATION_SERVER_CONFIG_FILE_PATH=bin/config.yaml
+      - EDGE_AUTHORIZATION_SERVER_DATABASE_CONNECTION_STRING=postgresql://user:password@db:5432/edge_authorization_server?sslmode=disable
+    expose:
+      - 8000
+    ports:
+      - "8000:8000"
+    networks:
+      - local_app_net
   
 networks:
   local_app_net:
     driver: bridge
+
+volumes:
+  db-data:
+    driver: local

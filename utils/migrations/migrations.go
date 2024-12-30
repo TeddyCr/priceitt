@@ -79,7 +79,7 @@ func (m *Migrate) getMigrationFiles(path string) []string {
 		log.Fatalf("Error retrieving migration files: #%v", err)
 	}
 	if len(migrationFiles) == 0 {
-		log.Fatalf("No migration files found at path: %s", root + path)
+		log.Fatalf("No migration files found at path: %s", root+path)
 	}
 	slices.Sort(migrationFiles)
 	return migrationFiles

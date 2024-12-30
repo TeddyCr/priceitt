@@ -1,11 +1,11 @@
 package postgres
 
 import (
+	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/infrastructure/database"
 	"github.com/TeddyCr/priceitt/models"
 	dbUtil "github.com/TeddyCr/priceitt/utils/database"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
-	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/infrastructure/database"
 )
 
 type PersistencePostgres struct {

@@ -14,6 +14,6 @@ CREATE TABLE IF NOT EXISTS "users" (
         (json->>'updatedAt')::bigint
     ) STORED NOT NULL,
     "createdAt" varchar(256) GENERATED ALWAYS AS (
-        (json->>'updatedBy')::varchar
+        (json->>'createdAt')::varchar
     ) STORED NOT NULL
 );

@@ -6,11 +6,11 @@ import (
 )
 
 type CreateUser struct {
-	Name string `json:"name"`
-	Email string `json:"email"`
-	Password string `json:"password"`
+	Name            string `json:"name"`
+	Email           string `json:"email"`
+	Password        string `json:"password"`
 	ConfirmPassword string `json:"confirmPassword"`
-	AuthType string `json:"authType"`
+	AuthType        string `json:"authType"`
 }
 
 func (c *CreateUser) ValidatePassword() error {
@@ -79,4 +79,3 @@ func (c *CreateUser) Render(w http.ResponseWriter, r *http.Request) error {
 	c.ConfirmPassword = ""
 	return nil
 }
-

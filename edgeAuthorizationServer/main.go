@@ -9,20 +9,15 @@ import (
 	"strings"
 	"time"
 
+	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/infrastructure/database/postgres"
+	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/infrastructure/fernet"
+	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/models"
+	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/resource"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/httplog/v2"
 	"gopkg.in/yaml.v2"
-	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/models"
-	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/resource"
-	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/infrastructure/database/postgres"
-	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/infrastructure/fernet"
 )
-
-// WHat do I need to do here?
-// 1. I need to register a repository. We should have a repository package.
-// 2. I need to register my resources.
-// 3. I need model my entities, create my serializers, and create my handlers (business logic).
 
 func main() {
 	config := getConfig()
@@ -40,9 +35,15 @@ func main() {
 	mountRoutes(r, config)
 
 	if config.Server.Type == "http" {
-		http.ListenAndServe(":"+strconv.Itoa(config.Server.Port), r)
+		err := http.ListenAndServe(":"+strconv.Itoa(config.Server.Port), r)
+		if err != nil {
+			panic(err)
+		}
 	} else {
-		http.ListenAndServeTLS(":"+strconv.Itoa(config.Server.Port), config.Server.Certificate, config.Server.Key, r)
+		err := http.ListenAndServeTLS(":"+strconv.Itoa(config.Server.Port), config.Server.Certificate, config.Server.Key, r)
+		if err != nil {
+			panic(err)
+		}
 	}
 }
 
@@ -51,7 +52,7 @@ func mountRoutes(r chi.Router, config models.Config) {
 	if err != nil {
 		panic(err)
 	}
-	r.Mount("/user", resource.NewUserResource(pq).Routes())
+	r.Mount("/api/v1/user", resource.NewUserResource(pq).Routes())
 }
 
 func getLoggerConfig(config models.Config) *httplog.Logger {

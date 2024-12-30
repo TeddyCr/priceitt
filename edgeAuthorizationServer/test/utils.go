@@ -5,8 +5,11 @@ import (
 	"log"
 	"time"
 
+	"github.com/TeddyCr/priceitt/models"
+	"github.com/TeddyCr/priceitt/utils/database"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/go-connections/nat"
+	"github.com/jmoiron/sqlx"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
 	"github.com/testcontainers/testcontainers-go/wait"
@@ -28,7 +31,6 @@ func TearDown(handlers []ITestHandler) {
 	}
 }
 
-
 type ITestHandler interface {
 	SetUp()
 	TearDown()
@@ -38,17 +40,17 @@ type ITestHandler interface {
 // PostgresTestHandler is a test handler for postgres
 func DefaultPostgresTestHandler() *PostgresTestHandler {
 	return &PostgresTestHandler{
-		userName: "user",
-		password: "password",
-		databaseName: "edge_authorization_server",
+		userName:      "user",
+		password:      "password",
+		databaseName:  "edge_authorization_server",
 		psqlContainer: nil,
 	}
 }
 
 type PostgresTestHandler struct {
-	userName string
-	password string
-	databaseName string
+	userName      string
+	password      string
+	databaseName  string
 	psqlContainer testcontainers.Container
 }
 
@@ -64,7 +66,7 @@ func (p *PostgresTestHandler) SetUp() {
 				}
 			},
 		),
- 		postgres.WithDatabase(p.databaseName),
+		postgres.WithDatabase(p.databaseName),
 		postgres.WithUsername(p.userName),
 		postgres.WithPassword(p.password),
 		testcontainers.WithWaitStrategy(
@@ -89,4 +91,13 @@ func (p *PostgresTestHandler) TearDown() {
 
 func (p PostgresTestHandler) GetHandlerName() string {
 	return "PostgresTestHandler"
+}
+
+func GetDatabaseConnection() *sqlx.DB {
+	config := models.DatabaseConfig{
+		DriverClass:      "postgres",
+		ConnectionString: "postgresql://user:password@localhost:5432/edge_authorization_server?sslmode=disable",
+	}
+	db := database.Connect(config)
+	return db
 }
