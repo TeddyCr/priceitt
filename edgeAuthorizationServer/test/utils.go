@@ -5,8 +5,11 @@ import (
 	"log"
 	"time"
 
+	"github.com/TeddyCr/priceitt/models"
+	"github.com/TeddyCr/priceitt/utils/database"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/go-connections/nat"
+	"github.com/jmoiron/sqlx"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
 	"github.com/testcontainers/testcontainers-go/wait"
@@ -89,4 +92,13 @@ func (p *PostgresTestHandler) TearDown() {
 
 func (p PostgresTestHandler) GetHandlerName() string {
 	return "PostgresTestHandler"
+}
+
+func GetDatabaseConnection() *sqlx.DB {
+	config := models.DatabaseConfig{
+		DriverClass: "postgres",
+		ConnectionString: "postgresql://user:password@localhost:5432/edge_authorization_server?sslmode=disable",
+	}
+	db := database.Connect(config)
+	return db
 }

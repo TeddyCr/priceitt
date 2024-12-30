@@ -19,11 +19,6 @@ import (
 	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/infrastructure/fernet"
 )
 
-// WHat do I need to do here?
-// 1. I need to register a repository. We should have a repository package.
-// 2. I need to register my resources.
-// 3. I need model my entities, create my serializers, and create my handlers (business logic).
-
 func main() {
 	config := getConfig()
 
@@ -51,7 +46,7 @@ func mountRoutes(r chi.Router, config models.Config) {
 	if err != nil {
 		panic(err)
 	}
-	r.Mount("/user", resource.NewUserResource(pq).Routes())
+	r.Mount("/api/v1/user", resource.NewUserResource(pq).Routes())
 }
 
 func getLoggerConfig(config models.Config) *httplog.Logger {
