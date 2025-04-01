@@ -6,9 +6,10 @@ import (
 )
 
 type Config struct {
-	Server    config.ServerConfig    `yaml:"server"`
-	Fernet    config.FernetConfig    `yaml:"fernet"`
-	Logging   config.LoggingConfig   `yaml:"logging"`
-	Database  models.DatabaseConfig  `yaml:"database"`
-	Migration models.MigrationConfig `yaml:"migration"`
+	Server    				config.ServerConfig    `yaml:"server"`
+	Fernet    				config.FernetConfig    `yaml:"fernet"`
+	Logging   				config.LoggingConfig   `yaml:"logging"`
+	Database  				models.DatabaseConfig  `yaml:"database"`
+	JwTokenConfiguration    config.SecretConfig    `yaml:"jwTokenConfiguration"`
+	Migration 				models.MigrationConfig `yaml:"migration"`
 }

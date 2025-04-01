@@ -11,6 +11,7 @@ import (
 
 	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/infrastructure/database/postgres"
 	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/infrastructure/fernet"
+	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/infrastructure/jwt_secret"
 	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/models"
 	"github.com/TeddyCr/priceitt/edgeAuthorizationServer/resource"
 	"github.com/go-chi/chi/v5"
@@ -32,6 +33,7 @@ func main() {
 	r.Use(middleware.Timeout(60 * time.Second))
 
 	fernet.Initialize(config.Fernet)
+	jwt_secret.Initialize(config.JwTokenConfiguration)
 	mountRoutes(r, config)
 
 	if config.Server.Type == "http" {

@@ -5,6 +5,6 @@ import (
 )
 
 // IUserResource is the interface for the user resource.
-type IUserResource interface {
+type IResource interface {
 	Routes() chi.Router
 }

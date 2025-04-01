@@ -29,6 +29,14 @@ func ErrInvalidRequest(err error) render.Renderer {
 	}
 }
 
+func ErrUnauthorized() render.Renderer {
+	return &ErrResponse{
+		HTTPStatusCode: 401,
+		StatusText:     "Unauthorized",
+		ErrorText:      "Unauthorized",
+	}
+}
+
 func ErrInternalServer(err error) render.Renderer {
 	return &ErrResponse{
 		Err:            err,
