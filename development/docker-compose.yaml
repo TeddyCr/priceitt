@@ -42,7 +42,7 @@ services:
     image: app
     build:
       context: ../../
-      dockerfile: ./edgeAuthorizationServer/development/Dockerfile
+      dockerfile: ./service/development/Dockerfile
     depends_on:
       db:
         condition: service_healthy

@@ -1,8 +1,0 @@
-CREATE TABLE IF NOT EXISTS DATABASE_MIGRATION_LOGS (
-    installed_rank SERIAL PRIMARY KEY,
-    version VARCHAR(256),
-    query VARCHAR(10000),
-    checksum VARCHAR(256),
-    installed_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    execution_time INTEGER
-);
