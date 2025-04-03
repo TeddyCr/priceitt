@@ -1,4 +1,4 @@
-FROM golang:1.22-alpine AS builder
+FROM golang:1.23-alpine AS builder
 RUN pwd
 COPY ./service /go/src/github.com/TeddyCr/priceitt/service/
 

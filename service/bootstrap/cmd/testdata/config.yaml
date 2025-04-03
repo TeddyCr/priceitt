@@ -8,7 +8,7 @@ logging:
 
 database:
   driverClass: postgres
-  connectionString: ${EDGE_AUTHORIZATION_SERVER_DATABASE_CONNECTION_STRING:-postgresql://user:password@localhost:54321/edge_authorization_server?sslmode=disable}
+  connectionString: ${SERVER_DATABASE_CONNECTION_STRING:-postgresql://user:password@localhost:54321/edge_authorization_server?sslmode=disable}
 
 migration:
   schemaPath: /bootstrap/migration/schema

@@ -50,9 +50,8 @@ CREATE TABLE IF NOT EXISTS "tokens" (
 
 -- Create token blacklist table
 CREATE TABLE IF NOT EXISTS "token_blacklist" (
-    id varchar(36) GENERATED ALWAYS AS (
-        (json->>'id')::varchar
-    ) STORED NOT null constraint token_blacklist_id_pk PRIMARY KEY ,
+    id varchar(36) NOT null constraint token_blacklist_id_pk PRIMARY KEY,
+    userId varchar(36) NOT NULL,
     token VARCHAR(512) NOT NULL
 );
 

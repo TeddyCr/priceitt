@@ -13,7 +13,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	os.Setenv("EDGE_AUTHORIZATION_SERVER_CONFIG_FILE_PATH", "cmd/testdata/config.yaml")
+	os.Setenv("SERVER_CONFIG_FILE_PATH", "cmd/testdata/config.yaml")
 	psqlContainer := test.DefaultPostgresTestHandler()
 	handlers := []test.ITestHandler{psqlContainer}
 	test.SetUp(handlers)

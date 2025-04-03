@@ -29,9 +29,9 @@ services:
     image: migration
     build:
       context: ../
-      dockerfile: ./bootstrap/Dockerfile
+      dockerfile: ./service/bootstrap/Dockerfile
     environment:
-      - EDGE_AUTHORIZATION_SERVER_DATABASE_CONNECTION_STRING=postgresql://user:password@db:5432/edge_authorization_server?sslmode=disable
+      - SERVER_DATABASE_CONNECTION_STRING=postgresql://user:password@db:5432/edge_authorization_server?sslmode=disable
     depends_on:
       db:
         condition: service_healthy
@@ -41,16 +41,16 @@ services:
   app:
     image: app
     build:
-      context: ../../
-      dockerfile: ./service/development/Dockerfile
+      context: ../
+      dockerfile: ./development/Dockerfile
     depends_on:
       db:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
     environment:
-      - EDGE_AUTHORIZATION_SERVER_CONFIG_FILE_PATH=bin/config.yaml
-      - EDGE_AUTHORIZATION_SERVER_DATABASE_CONNECTION_STRING=postgresql://user:password@db:5432/edge_authorization_server?sslmode=disable
+      - SERVER_CONFIG_FILE_PATH=bin/config.yaml
+      - SERVER_DATABASE_CONNECTION_STRING=postgresql://user:password@db:5432/edge_authorization_server?sslmode=disable
     expose:
       - 8000
     ports:

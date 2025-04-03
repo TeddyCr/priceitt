@@ -45,7 +45,7 @@ func getConfigFile() string {
 
 	var val string
 	var found bool
-	val, found = os.LookupEnv("EDGE_AUTHORIZATION_SERVER_CONFIG_FILE_PATH")
+	val, found = os.LookupEnv("SERVER_CONFIG_FILE_PATH")
 	if !found {
 		val = "config/config.yaml"
 	}
