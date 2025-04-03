@@ -1,0 +1,34 @@
+server:
+  type: ${EDGE_AUTHORIZATION_SERVER_TYPE:-http}
+  port: ${EDGE_AUTHORIZATION_SERVER_PORT:-8000}
+  env: ${EDGE_AUTHORIZATION_SERVER_ENV:-dev}
+  version: ${EDGE_AUTHORIZATION_SERVER_VERSION:-v0}
+  # certificate: ${EDGE_AUTHORIZATION_SERVER_CERTIFICATE:-}
+  # key: ${EDGE_AUTHORIZATION_SERVER_KEY:-}
+
+logging:
+  level: ${EDGE_AUTHORIZATION_SERVER_LOG_LEVEL:-DEBUG}
+
+database:
+  driverClass: postgres
+  connectionString: ${SERVER_DATABASE_CONNECTION_STRING:-postgresql://user:password@localhost:5432/edge_authorization_server?sslmode=disable}
+
+migration:
+  schemaPath: /bootstrap/migration/schema
+  dataPath: /bootstrap/migration/data
+  metadataPath: /bootstrap/migration/metadata
+  metadataQueries:
+    insertMetadataQuery: "INSERT INTO DATABASE_MIGRATION_LOGS (version, query, checksum, execution_time) VALUES ($1, $2, $3, $4)"
+    selectMigrationVersionsQuery: "SELECT version FROM DATABASE_MIGRATION_LOGS"
+    selectMigrationChecksumsQuery: "SELECT checksum FROM DATABASE_MIGRATION_LOGS"
+  force: true
+  checkIntegrity: false
+
+fernet:
+  key: ${EDGE_AUTHORIZATION_SERVER_FERNET_KEY:-jwEMNW7F-XYPNe4s9jZRfv7Ra9rwMBgV-gDP4NxjAXA=}
+  salt: ${EDGE_AUTHORIZATION_SERVER_SALT:-salt}
+
+jwTokenConfiguration:
+  secret: ${EDGE_AUTHORIZATION_SERVER_JWT_SECRET:-LuAtTxHnSvLfKCsL6yEjzmd8tZ3Y7K8L}
+  issuer: ${EDGE_AUTHORIZATION_SERVER_JWT_SECRET:-localhost}
+  audience: ${EDGE_AUTHORIZATION_SERVER_JWT_SECRET:-localhost,127.0.0.1}

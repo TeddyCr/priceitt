@@ -1,0 +1,67 @@
+services:
+  db:
+    image: postgres
+    restart: always
+    shm_size: 128mb
+    expose:
+      - 5432
+    ports:
+      - "5432:5432"
+    volumes:
+      - type: volume
+        source: db-data
+        target: /var/lib/postgresql/data
+        volume:
+          nocopy: true
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: edge_authorization_server
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - local_app_net
+
+  migrate:
+    image: migration
+    build:
+      context: ../
+      dockerfile: ./service/bootstrap/Dockerfile
+    environment:
+      - SERVER_DATABASE_CONNECTION_STRING=postgresql://user:password@db:5432/edge_authorization_server?sslmode=disable
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - local_app_net
+
+  app:
+    image: app
+    build:
+      context: ../
+      dockerfile: ./development/Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      - SERVER_CONFIG_FILE_PATH=bin/config.yaml
+      - SERVER_DATABASE_CONNECTION_STRING=postgresql://user:password@db:5432/edge_authorization_server?sslmode=disable
+    expose:
+      - 8000
+    ports:
+      - "8000:8000"
+    networks:
+      - local_app_net
+  
+networks:
+  local_app_net:
+    driver: bridge
+
+volumes:
+  db-data:
+    driver: local
