@@ -13,7 +13,7 @@ func StartApplication() tc.ComposeStack {
 	if err != nil {
 		panic(err)
 	}
-	for i := 0; i < 2; i++ {
+	for range 3 {
 		wd = filepath.Dir(wd)
 	}
 	dockerComposeFilePath := filepath.Join(wd, "development/docker-compose.yaml")
