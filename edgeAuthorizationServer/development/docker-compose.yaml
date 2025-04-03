@@ -43,7 +43,6 @@ services:
     build:
       context: ../../
       dockerfile: ./edgeAuthorizationServer/development/Dockerfile
-      no_cache: true
     depends_on:
       db:
         condition: service_healthy
