@@ -21,6 +21,7 @@ require (
 	github.com/testcontainers/testcontainers-go/modules/compose v0.36.0
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.36.0
 	github.com/xeipuuv/gojsonschema v1.2.0
+	go.uber.org/multierr v1.11.0
 	golang.org/x/crypto v0.36.0
 	gopkg.in/yaml.v2 v2.4.0
 )

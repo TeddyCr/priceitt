@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/TeddyCr/priceitt/service/models/generated"
-	"github.com/jmoiron/sqlx"
+	"github.com/TeddyCr/priceitt/service/utils/database"
 )
 
 type MockRepository struct {
@@ -14,26 +14,34 @@ func (m MockRepository) Create(ctx context.Context, createEntity generated.IEnti
 	return nil
 }
 
-func (m MockRepository) GetById(ctx context.Context, id string) (generated.IEntity, error) {
+func (m MockRepository) GetById(ctx context.Context, id string, filter QueryFilter) (generated.IEntity, error) {
 	return nil, nil
 }
 
-func (m MockRepository) GetByName(ctx context.Context, name string) (generated.IEntity, error) {
+func (m MockRepository) GetByName(ctx context.Context, name string, filter QueryFilter) (generated.IEntity, error) {
 	return nil, nil
 }
 
-func (m MockRepository) Update(ctx context.Context, entity generated.IEntity) error {
+func (m MockRepository) UpdateById(ctx context.Context, id string, entity generated.IEntity, filter QueryFilter) error {
 	return nil
 }
 
-func (m MockRepository) Delete(ctx context.Context, id string) error {
+func (m MockRepository) UpdateByName(ctx context.Context, name string, entity generated.IEntity, filter QueryFilter) error {
 	return nil
 }
 
-func (m MockRepository) List(ctx context.Context) ([]generated.IEntity, error) {
+func (m MockRepository) DeleteById(ctx context.Context, id string, filter QueryFilter) error {
+	return nil
+}
+
+func (m MockRepository) DeleteByName(ctx context.Context, name string, filter QueryFilter) error {
+	return nil
+}
+
+func (m MockRepository) List(ctx context.Context, filter QueryFilter) ([]generated.IEntity, error) {
 	return nil, nil
 }
 
-func (m MockRepository) GetClient() *sqlx.DB {
+func (m MockRepository) GetClient() database.Executor {
 	return nil
 }

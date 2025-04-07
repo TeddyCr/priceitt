@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -13,6 +14,7 @@ import (
 	"github.com/TeddyCr/priceitt/service/models/generated/auth"
 	"github.com/TeddyCr/priceitt/service/models/generated/createEntities"
 	"github.com/TeddyCr/priceitt/service/models/generated/entities"
+	"github.com/TeddyCr/priceitt/service/models/types"
 	goFernet "github.com/fernet/fernet-go"
 	"github.com/go-chi/httplog/v2"
 	"github.com/google/uuid"
@@ -25,36 +27,17 @@ import (
 	user_repository "github.com/TeddyCr/priceitt/service/repository/database/user"
 )
 
-type TokenType int8
-
-const (
-	RefreshToken TokenType = iota
-	AccessToken
-)
-
-func (t TokenType) String() string {
-	switch t {
-	case RefreshToken:
-		return "refresh"
-	case AccessToken:
-		return "access"
-	default:
-		return "unknown"
-	}
-}
-
-
 func NewUserHandler(databaseRepository dbRepo.IDatabaseRepository, authRepository *auth_repository.AuthRepository) application.IHandler {
 	return UserHandler{
 		DatabaseRepository: databaseRepository,
-		AuthRepository:    authRepository,
+		AuthRepository:     authRepository,
 		fernetInstance:     fernet.GetInstance(),
 	}
 }
 
 type UserHandler struct {
 	DatabaseRepository dbRepo.IDatabaseRepository
-	AuthRepository    *auth_repository.AuthRepository
+	AuthRepository     *auth_repository.AuthRepository
 	fernetInstance     *fernet.Fernet
 }
 
@@ -90,10 +73,10 @@ func (c UserHandler) Login(ctx context.Context, baicAuth auth.BasicAuth) (genera
 	var logger = httplog.LogEntry(ctx)
 	var user generated.IEntity
 	var err error
-	user, err = c.DatabaseRepository.GetByName(ctx, baicAuth.Username)
+	user, err = c.DatabaseRepository.GetByName(ctx, baicAuth.Username, *dbRepo.NewQueryFilter(nil))
 	if err != nil {
-		user, err = c.DatabaseRepository.(*user_repository.UserRepository).GetByEmail(ctx, baicAuth.Username)
-		if (err != nil && err.Error() == "sql: no rows in result set") {
+		user, err = c.DatabaseRepository.(*user_repository.UserRepository).GetByEmail(ctx, baicAuth.Username, *dbRepo.NewQueryFilter(nil))
+		if err != nil && errors.Is(err, sql.ErrNoRows) {
 			logger.Error("failed to get user", "error", err)
 			return nil, fmt.Errorf("user [%s] not found", baicAuth.Username)
 		} else if err != nil {
@@ -124,12 +107,31 @@ func (c UserHandler) Login(ctx context.Context, baicAuth auth.BasicAuth) (genera
 	return access, nil
 }
 
-func (c UserHandler) Logout(ctx context.Context, token string) (string, error) {
-	_, err := ValidateJWT(token)
+func (c UserHandler) Logout(ctx context.Context) (string, error) {
+	var logger = httplog.LogEntry(ctx)
+	jwtContextValues := ctx.Value("jwtContextValues").(types.JWTContextValues)
+	token, ok := jwtContextValues.Get("token").(string)
+	if !ok {
+		logger.Error(fmt.Sprintf("failed to get token from context: %v", jwtContextValues))
+		return "", errors.New("failed to get token from context")
+	}
+	userId, ok := jwtContextValues.Get("userId").(string)
+	if !ok {
+		logger.Error(fmt.Sprintf("failed to get user id from context: %v", jwtContextValues))
+		return "", errors.New("failed to get user id from context")
+	}
+
+	user, err := c.DatabaseRepository.GetById(ctx, userId, *dbRepo.NewQueryFilter(nil))
 	if err != nil {
+		logger.Error(fmt.Sprintf("failed to get user: %v", err))
 		return "", err
 	}
-	
+	err = c.AuthRepository.Logout(ctx, token, *user.(*entities.User))
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to logout: %v", err))
+		return "", err
+	}
+
 	return "Logout successful", nil
 }
 
@@ -160,17 +162,17 @@ func (c UserHandler) createRefreshToken(userEntity *entities.User) *entities.JWT
 	}
 
 	return &entities.JWToken{
-		ID:        uuid.New(),
-		Name:      "",
-		CreatedAt: time.Now().UnixMilli(),
-		UpdatedAt: time.Now().UnixMilli(),
-		TokenType: TokenType(RefreshToken).String(),
-		Token:     refreshToken,
+		ID:             uuid.New(),
+		Name:           types.TokenType(types.RefreshToken).String(),
+		CreatedAt:      time.Now().UnixMilli(),
+		UpdatedAt:      time.Now().UnixMilli(),
+		TokenType:      types.TokenType(types.RefreshToken).String(),
+		Token:          refreshToken,
 		ExpirationDate: time.Now().Add(time.Hour * time.Duration(expiration)).UnixMilli(),
-		UserID: userEntity.ID,
+		UserID:         userEntity.ID,
 		// TODO: get device id and ip from request
 		DeviceID: uuid.New(),
-		IP: "",
+		IP:       "",
 	}
 }
 
@@ -184,19 +186,19 @@ func (c UserHandler) createAccessToken(userEntity *entities.User) *entities.JWTo
 	if err != nil {
 		panic(fmt.Sprintf("failed to create access token: %v", err))
 	}
-	
+
 	return &entities.JWToken{
-		ID:        uuid.New(),
-		Name:      "",
-		CreatedAt: time.Now().UnixMilli(),
-		UpdatedAt: time.Now().UnixMilli(),
-		TokenType: TokenType(AccessToken).String(),
-		Token:     accessToken,
+		ID:             uuid.New(),
+		CreatedAt:      time.Now().UnixMilli(),
+		UpdatedAt:      time.Now().UnixMilli(),
+		TokenType:      types.TokenType(types.AccessToken).String(),
+		Name: 			types.TokenType(types.AccessToken).String(),
+		Token:          accessToken,
 		ExpirationDate: time.Now().Add(time.Hour * time.Duration(expiration)).UnixMilli(),
-		UserID: userEntity.ID,
+		UserID:         userEntity.ID,
 		// TODO: get device id and ip from request
 		DeviceID: uuid.New(),
-		IP: "",
+		IP:       "",
 	}
 }
 
@@ -205,4 +207,3 @@ func (c UserHandler) validatePassword(encryptedPassword string, password string)
 	hashedPassword := argon2.IDKey([]byte(password), []byte(c.fernetInstance.Salt), 1, 64*1024, 4, 32)
 	return string(hashedPassword) == string(decryptedPassword)
 }
-
