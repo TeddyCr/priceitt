@@ -2,6 +2,7 @@ package integration
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -97,4 +98,38 @@ func TestLogin(t *testing.T) {
 	assert.NotEqual(t, 0, token.UpdatedAt)
 
 	logger.Debug("Login successful")
+}
+
+func TestLogOut(t *testing.T) {
+	createUser() //nolint:errcheck
+	body := []byte(`{
+		"username": "John Doe",
+		"password": "*lX1t6r8};k}8VPYEk"
+	}`)
+	bodyReader := bytes.NewReader(body)
+
+	req, err := http.Post(resourcePath+"/login", "application/json", bodyReader)
+	require.NoError(t, err)
+	defer func() {
+		if err := req.Body.Close(); err != nil {
+			t.Errorf("Error closing response body: %v", err)
+		}
+	}()
+
+	resp, err := io.ReadAll(req.Body)
+	require.NoError(t, err)
+
+	var token entities.JWToken
+	err = json.Unmarshal(resp, &token)
+	require.NoError(t, err)
+
+	tokenString := token.Token
+	tokenString = base64.StdEncoding.EncodeToString([]byte(tokenString))
+
+	newReq, err := http.NewRequest("POST", resourcePath+"/logout", nil)
+	require.NoError(t, err)
+	newReq.Header.Set("Authorization", "Bearer "+tokenString)
+	client := http.DefaultClient
+	_, err = client.Do(newReq)
+	require.NoError(t, err)
 }

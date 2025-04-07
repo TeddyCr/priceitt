@@ -46,6 +46,7 @@ func JWTCtx(next http.Handler) http.Handler {
 				"userId": userId,
 			},
 		}
+		// TODO implement https://stackoverflow.com/questions/40891345/fix-should-not-use-basic-type-string-as-key-in-context-withvalue-golint
 		ctx := context.WithValue(r.Context(), "jwtContextValues", jwtContextValues) //nolint:staticcheck
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
