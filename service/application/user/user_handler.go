@@ -103,7 +103,10 @@ func (c UserHandler) Login(ctx context.Context, baicAuth auth.BasicAuth) (genera
 	}
 	refresh := c.createRefreshToken(userEntity)
 	access := c.createAccessToken(userEntity)
-	c.AuthRepository.Create(ctx, refresh)
+	err = c.AuthRepository.Create(ctx, refresh)
+	if err != nil {
+		return nil, err
+	}
 	return access, nil
 }
 
@@ -151,7 +154,7 @@ func (c UserHandler) getUser(createUser *createEntities.CreateUser, encryptedPas
 }
 
 func (c UserHandler) createRefreshToken(userEntity *entities.User) *entities.JWToken {
-	var expiration int = 999999
+	var expiration = 999999
 	expirationEnv := os.Getenv("REFRESH_EXPIRATION")
 	if expirationEnv != "" {
 		expiration, _ = strconv.Atoi(expirationEnv)
@@ -177,7 +180,7 @@ func (c UserHandler) createRefreshToken(userEntity *entities.User) *entities.JWT
 }
 
 func (c UserHandler) createAccessToken(userEntity *entities.User) *entities.JWToken {
-	var expiration int = 1
+	var expiration = 1
 	expirationEnv := os.Getenv("ACCESS_EXPIRATION")
 	if expirationEnv != "" {
 		expiration, _ = strconv.Atoi(expirationEnv)
@@ -192,7 +195,7 @@ func (c UserHandler) createAccessToken(userEntity *entities.User) *entities.JWTo
 		CreatedAt:      time.Now().UnixMilli(),
 		UpdatedAt:      time.Now().UnixMilli(),
 		TokenType:      types.TokenType(types.AccessToken).String(),
-		Name: 			types.TokenType(types.AccessToken).String(),
+		Name:           types.TokenType(types.AccessToken).String(),
 		Token:          accessToken,
 		ExpirationDate: time.Now().Add(time.Hour * time.Duration(expiration)).UnixMilli(),
 		UserID:         userEntity.ID,

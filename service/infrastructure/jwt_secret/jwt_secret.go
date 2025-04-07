@@ -10,8 +10,8 @@ import (
 var lock = &sync.Mutex{}
 
 type JWTSecret struct {
-	Secret  []byte
-	Issuer  string
+	Secret   []byte
+	Issuer   string
 	Audience []string
 }
 

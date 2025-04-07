@@ -1,4 +1,4 @@
-// +build migration
+//go:build migration
 
 package main
 

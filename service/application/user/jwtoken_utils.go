@@ -8,16 +8,15 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-
 func CreateJWT(expiration int, sub string, tokenType string) (string, error) {
 	jwtInstance := jwt_secret.GetInstance()
 	key := jwtInstance.Secret
 	issuer := jwtInstance.Issuer
 	claims := jwt.MapClaims{
-		"iss": issuer,
-		"exp": time.Now().Add(time.Hour * time.Duration(expiration)).UnixMilli(),
-		"iat": time.Now().UnixMilli(),
-		"sub": sub,
+		"iss":  issuer,
+		"exp":  time.Now().Add(time.Hour * time.Duration(expiration)).UnixMilli(),
+		"iat":  time.Now().UnixMilli(),
+		"sub":  sub,
 		"type": tokenType,
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

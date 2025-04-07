@@ -98,7 +98,7 @@ func (a *AuthRepository) Logout(ctx context.Context, token string, user entities
 		// TODO: handle this better. We need to recreate the filter because
 		// name needs to be the first parameter
 		newFilter = repository.NewQueryFilter(map[string]string{
-			"name": "refresh",
+			"name":   "refresh",
 			"userId": user.ID.String(),
 		})
 		row, err := utilDB.PerformSelectScalarQueryTx(ctx, tx, query, newFilter.Args()...)
@@ -110,15 +110,21 @@ func (a *AuthRepository) Logout(ctx context.Context, token string, user entities
 			return err
 		}
 		authRepository := AuthRepository{a.dbContext, tx}
-		authRepository.DeleteById(ctx, marshaledRow.GetID().String(), *repository.NewQueryFilter(nil))
-		authRepository.CreateBlacklistToken(ctx, marshaledRow)
-		authRepository.CreateBlacklistToken(ctx, &entities.JWToken{
-			ID: uuid.New(),
-			IP: "",
-			Token: token,
+		if err := authRepository.DeleteById(ctx, marshaledRow.GetID().String(), *repository.NewQueryFilter(nil)); err != nil {
+			return err
+		}
+		if err := authRepository.CreateBlacklistToken(ctx, marshaledRow); err != nil {
+			return err
+		}
+		if err := a.CreateBlacklistToken(ctx, &entities.JWToken{
+			ID:        uuid.New(),
+			IP:        "",
+			Token:     token,
 			TokenType: types.TokenType(types.AccessToken).String(),
-			UserID: user.ID,
-		})
+			UserID:    user.ID,
+		}); err != nil {
+			return err
+		}
 
 		return nil
 	})

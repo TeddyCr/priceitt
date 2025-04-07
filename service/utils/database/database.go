@@ -98,7 +98,9 @@ func RunInTx(ctx context.Context, db *sqlx.DB, fn func(tx *sql.Tx) error) error 
 	}
 
 	defer func() {
-		FinishTx(err, tx)
+		if err := FinishTx(err, tx); err != nil {
+			log.Fatalf("Error finishing tx: #%v", err)
+		}
 	}()
 
 	err = fn(tx)

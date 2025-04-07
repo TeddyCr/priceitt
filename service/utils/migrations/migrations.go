@@ -135,7 +135,11 @@ func (m *Migrate) getMigrationVersions() []string {
 	if err != nil {
 		log.Fatalf("Error querying migration metadata: #%v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			log.Fatalf("Error closing migration metadata rows: #%v", err)
+		}
+	}()
 
 	for rows.Next() {
 		var migration string
@@ -158,7 +162,11 @@ func (m *Migrate) getMigrationChecksum(version string) uint32 {
 	if err != nil {
 		log.Fatalf("Error querying migration metadata: #%v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			log.Fatalf("Error closing migration metadata rows: #%v", err)
+		}
+	}()
 
 	for rows.Next() {
 		var checksum uint32
@@ -188,7 +196,11 @@ func (m *Migrate) writeMigrationMetadata(migrationMetadata models.MigrationMetad
 	if err != nil {
 		log.Fatalf("Error querying migration metadata: #%v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			log.Fatalf("Error closing migration metadata rows: #%v", err)
+		}
+	}()
 	if !rows.Next() {
 		exists = false
 	}

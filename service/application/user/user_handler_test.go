@@ -1,4 +1,4 @@
-// +build unit
+//go:build unit
 
 package user
 
@@ -7,11 +7,11 @@ import (
 	"testing"
 
 	"github.com/TeddyCr/priceitt/service/infrastructure/fernet"
-	repository "github.com/TeddyCr/priceitt/service/repository/database"
 	"github.com/TeddyCr/priceitt/service/models/config"
 	"github.com/TeddyCr/priceitt/service/models/generated/auth"
 	"github.com/TeddyCr/priceitt/service/models/generated/createEntities"
 	"github.com/TeddyCr/priceitt/service/models/generated/entities"
+	repository "github.com/TeddyCr/priceitt/service/repository/database"
 	goFernet "github.com/fernet/fernet-go"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/crypto/argon2"

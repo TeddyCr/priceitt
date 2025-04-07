@@ -8,18 +8,18 @@ import (
 )
 
 type JWToken struct {
-	ID                      uuid.UUID   `json:"id"`
-	Name                    string      `json:"name"`
-	Description             string      `json:"description"`
-	DisplayName             string      `json:"displayName"`
-	UpdatedAt               int64       `json:"updatedAt"`
-	CreatedAt               int64       `json:"createdAt"`
-	Token				   	string      `json:"token"`
-	TokenType				string      `json:"tokenType"`
-	ExpirationDate			int64       `json:"expirationDate"`
-	UserID					uuid.UUID   `json:"userId"`
-	DeviceID				uuid.UUID   `json:"deviceId"`
-	IP						string      `json:"ip"`
+	ID             uuid.UUID `json:"id"`
+	Name           string    `json:"name"`
+	Description    string    `json:"description"`
+	DisplayName    string    `json:"displayName"`
+	UpdatedAt      int64     `json:"updatedAt"`
+	CreatedAt      int64     `json:"createdAt"`
+	Token          string    `json:"token"`
+	TokenType      string    `json:"tokenType"`
+	ExpirationDate int64     `json:"expirationDate"`
+	UserID         uuid.UUID `json:"userId"`
+	DeviceID       uuid.UUID `json:"deviceId"`
+	IP             string    `json:"ip"`
 }
 
 func (jwt JWToken) GetID() uuid.UUID {

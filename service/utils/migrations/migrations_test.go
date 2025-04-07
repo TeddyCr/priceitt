@@ -13,7 +13,7 @@ import (
 
 func tearDown() {
 	// Remove test db
-	os.Remove("testdata/test.db")
+	os.Remove("testdata/test.db") //nolint:errcheck
 }
 
 func TestMain(m *testing.M) {
@@ -59,7 +59,11 @@ func TestExecMigration(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error querying migration metadata: #%v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			t.Fatalf("Error closing migration metadata rows: #%v", err)
+		}
+	}()
 	if !rows.Next() {
 		t.Fatalf("No metadata found")
 	}

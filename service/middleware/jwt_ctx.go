@@ -46,8 +46,7 @@ func JWTCtx(next http.Handler) http.Handler {
 				"userId": userId,
 			},
 		}
-		ctx := context.WithValue(r.Context(), "jwtContextValues", jwtContextValues)
+		ctx := context.WithValue(r.Context(), "jwtContextValues", jwtContextValues) //nolint:staticcheck
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
-	

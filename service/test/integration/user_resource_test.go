@@ -38,7 +38,11 @@ func createUser() (*http.Response, error) {
 func TestCreateUser(t *testing.T) {
 	req, err := createUser()
 	require.NoError(t, err)
-	defer req.Body.Close()
+	defer func() {
+		if err := req.Body.Close(); err != nil {
+			t.Errorf("Error closing response body: %v", err)
+		}
+	}()
 
 	// Get the logger from the response request context
 	logger := httplog.LogEntry(req.Request.Context())
@@ -62,7 +66,7 @@ func TestCreateUser(t *testing.T) {
 }
 
 func TestLogin(t *testing.T) {
-	createUser()
+	createUser() //nolint:errcheck
 	body := []byte(`{
 		"username": "John Doe",
 		"password": "*lX1t6r8};k}8VPYEk"
@@ -71,7 +75,11 @@ func TestLogin(t *testing.T) {
 
 	req, err := http.Post(resourcePath+"/login", "application/json", bodyReader)
 	require.NoError(t, err)
-	defer req.Body.Close()
+	defer func() {
+		if err := req.Body.Close(); err != nil {
+			t.Errorf("Error closing response body: %v", err)
+		}
+	}()
 
 	// Get the logger from the response request context
 	logger := httplog.LogEntry(req.Request.Context())
