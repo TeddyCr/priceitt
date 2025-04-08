@@ -69,16 +69,16 @@ func (c UserHandler) Create(ctx context.Context, createEntity generated.ICreateE
 	return user, nil
 }
 
-func (c UserHandler) Login(ctx context.Context, baicAuth auth.BasicAuth) (generated.IEntity, error) {
+func (c UserHandler) Login(ctx context.Context, basicAuth auth.BasicAuth) (generated.IEntity, error) {
 	var logger = httplog.LogEntry(ctx)
 	var user generated.IEntity
 	var err error
-	user, err = c.DatabaseRepository.GetByName(ctx, baicAuth.Username, *dbRepo.NewQueryFilter(nil))
+	user, err = c.DatabaseRepository.GetByName(ctx, basicAuth.Username, *dbRepo.NewQueryFilter(nil))
 	if err != nil {
-		user, err = c.DatabaseRepository.(*user_repository.UserRepository).GetByEmail(ctx, baicAuth.Username, *dbRepo.NewQueryFilter(nil))
+		user, err = c.DatabaseRepository.(*user_repository.UserRepository).GetByEmail(ctx, basicAuth.Username, *dbRepo.NewQueryFilter(nil))
 		if err != nil && errors.Is(err, sql.ErrNoRows) {
 			logger.Error("failed to get user", "error", err)
-			return nil, fmt.Errorf("user [%s] not found", baicAuth.Username)
+			return nil, fmt.Errorf("user [%s] not found", basicAuth.Username)
 		} else if err != nil {
 			return nil, err
 		}
@@ -98,7 +98,7 @@ func (c UserHandler) Login(ctx context.Context, baicAuth auth.BasicAuth) (genera
 	if !ok {
 		return nil, errors.New("failed to cast to auth.Basic")
 	}
-	if !c.validatePassword(auth.Password, baicAuth.Password) {
+	if !c.validatePassword(auth.Password, basicAuth.Password) {
 		return nil, errors.New("invalid password")
 	}
 	refresh := c.createRefreshToken(userEntity)
