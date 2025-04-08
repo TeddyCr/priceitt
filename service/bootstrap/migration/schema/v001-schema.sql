@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS "tokens" (
         (json->>'id')::varchar
     ) STORED NOT null constraint tokens_id_pk PRIMARY KEY ,
     json jsonb NOT NULL,
+    name VARCHAR(36) GENERATED always as (json->>'name'::varchar ) stored null,
     userId varchar(36) GENERATED ALWAYS AS (
         (json->>'userId')::varchar
     ) STORED NOT NULL constraint tokens_user_id_fk REFERENCES "users"("id"),
@@ -50,8 +51,18 @@ CREATE TABLE IF NOT EXISTS "tokens" (
 
 -- Create token blacklist table
 CREATE TABLE IF NOT EXISTS "token_blacklist" (
-    id varchar(36) NOT null constraint token_blacklist_id_pk PRIMARY KEY,
-    userId varchar(36) NOT NULL,
-    token VARCHAR(512) NOT NULL
+    id varchar(36) GENERATED ALWAYS AS (
+        (json->>'id')::varchar
+    ) STORED NOT null constraint token_blacklist_id_pk PRIMARY KEY,
+    json jsonb NOT NULL,
+    userId varchar(36) GENERATED ALWAYS AS (
+        (json->>'userId')::varchar
+    ) STORED NOT NULL,
+    token VARCHAR(512) GENERATED ALWAYS AS (
+        (json->>'token')::varchar
+    ) STORED NOT NULL,
+    name VARCHAR(36) GENERATED always as (json->>'name'::varchar ) stored null
 );
 
+CREATE INDEX IF NOT EXISTS token_blacklist_token_type_idx ON token_blacklist (name);
+CREATE INDEX IF NOT EXISTS token_blacklist_user_id_idx ON token_blacklist (userId);

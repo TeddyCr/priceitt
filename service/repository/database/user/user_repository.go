@@ -7,15 +7,13 @@ import (
 	"fmt"
 
 	"github.com/TeddyCr/priceitt/service/infrastructure/database"
-	repository "github.com/TeddyCr/priceitt/service/repository/database"
 	"github.com/TeddyCr/priceitt/service/models/generated"
 	"github.com/TeddyCr/priceitt/service/models/generated/entities"
+	repository "github.com/TeddyCr/priceitt/service/repository/database"
 	utilDB "github.com/TeddyCr/priceitt/service/utils/database"
-	"github.com/jmoiron/sqlx"
 )
 
-type fn func (ctx context.Context, db *sqlx.DB, query string, name string) (*sql.Row, error)
-
+type fn func(ctx context.Context, db utilDB.Executor, query string, args ...any) (*sql.Row, error)
 
 func NewUserRepository(dbContext database.IPersistenceDatabase) *UserRepository {
 	return &UserRepository{dbContext: dbContext, client: dbContext.GetClient()}
@@ -24,7 +22,7 @@ func NewUserRepository(dbContext database.IPersistenceDatabase) *UserRepository 
 // UserRepository is a struct that defines the methods that a user repository should implement
 type UserRepository struct {
 	dbContext database.IPersistenceDatabase
-	client    *sqlx.DB
+	client    utilDB.Executor
 }
 
 func (u UserRepository) Create(ctx context.Context, user generated.IEntity) error {
@@ -36,51 +34,83 @@ func (u UserRepository) Create(ctx context.Context, user generated.IEntity) erro
 	return nil
 }
 
-func (u UserRepository) GetById(ctx context.Context, id string) (generated.IEntity, error) { // (entities.User, error) {
-	return nil, nil
+func (u UserRepository) GetById(ctx context.Context, id string, filter repository.QueryFilter) (generated.IEntity, error) {
+	query := fmt.Sprintf(repository.GetById, "users", filter.String())
+	filter.Filter["id"] = id
+	row, err := utilDB.PerformSelectScalarQuery(ctx, u.client, query, filter.Args()...)
+	if err != nil {
+		return nil, err
+	}
+	return marshalRow(row)
 }
 
-func (u UserRepository) GetByName(ctx context.Context, name string) (generated.IEntity, error) { // (entities.User, error) {
-	query := fmt.Sprintf(repository.GetByName, "users")
-	user, err := u.getByNameOrEmail(ctx, utilDB.PerformSelectScalarQuery, query, name)
+func (u UserRepository) GetByName(ctx context.Context, name string, filter repository.QueryFilter) (generated.IEntity, error) {
+	query := fmt.Sprintf(repository.GetByName, "users", filter.String())
+	filter.Filter["name"] = name
+	user, err := u.getByNameOrEmail(ctx, utilDB.PerformSelectScalarQuery, query, filter.Args()...)
 	if err != nil {
 		return nil, err
 	}
 	return user, nil
 }
 
-func (u UserRepository) GetByEmail(ctx context.Context, email string) (generated.IEntity, error) { // (entities.User, error) {
-	query := fmt.Sprintf(GetByEmail, "users")
-	user, err := u.getByNameOrEmail(ctx, utilDB.PerformSelectScalarQuery, query, email)
+func (u UserRepository) GetByEmail(ctx context.Context, email string, filter repository.QueryFilter) (generated.IEntity, error) {
+	query := fmt.Sprintf(GetByEmail, "users", filter.String())
+	filter.Filter["email"] = email
+	user, err := u.getByNameOrEmail(ctx, utilDB.PerformSelectScalarQuery, query, filter.Args()...)
 	if err != nil {
 		return nil, err
 	}
 	return user, nil
 }
 
-func (u UserRepository) Update(ctx context.Context, entity generated.IEntity) error {
+func (u UserRepository) UpdateById(ctx context.Context, id string, entity generated.IEntity, filter repository.QueryFilter) error {
 	return nil
 }
 
-func (u UserRepository) Delete(ctx context.Context, id string) error {
+func (u UserRepository) UpdateByName(ctx context.Context, name string, entity generated.IEntity, filter repository.QueryFilter) error {
 	return nil
 }
 
-func (u UserRepository) List(ctx context.Context) ([]generated.IEntity, error) { // ([]entities.User, error) {
+func (u UserRepository) DeleteById(ctx context.Context, id string, filter repository.QueryFilter) error {
+	query := fmt.Sprintf(repository.DeleteById, "users", filter.String())
+	filter.Filter["id"] = id
+	_, err := u.client.ExecContext(ctx, query, filter.Args()...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (u UserRepository) DeleteByName(ctx context.Context, name string, filter repository.QueryFilter) error {
+	query := fmt.Sprintf(repository.DeleteByName, "users", filter.String())
+	filter.Filter["name"] = name
+	_, err := u.client.ExecContext(ctx, query, filter.Args()...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (u UserRepository) List(ctx context.Context, filter repository.QueryFilter) ([]generated.IEntity, error) {
 	return nil, nil
 }
 
-func (u UserRepository) GetClient() *sqlx.DB {
+func (u UserRepository) GetClient() utilDB.Executor {
 	return u.client
 }
 
-func (u UserRepository) getByNameOrEmail(ctx context.Context, f fn, query string, name string) (generated.IEntity, error) {
-	row, err := f(ctx, u.client, query, name)
+func (u UserRepository) getByNameOrEmail(ctx context.Context, f fn, query string, args ...any) (generated.IEntity, error) {
+	row, err := f(ctx, u.client, query, args...)
 	if err != nil {
 		return nil, err
 	}
+	return marshalRow(row)
+}
+
+func marshalRow(row *sql.Row) (generated.IEntity, error) {
 	var jsonData []byte
-	err = row.Scan(&jsonData)
+	err := row.Scan(&jsonData)
 	if err != nil {
 		return nil, err
 	}
@@ -89,6 +119,5 @@ func (u UserRepository) getByNameOrEmail(ctx context.Context, f fn, query string
 	if err != nil {
 		return nil, err
 	}
-
 	return &user, nil
 }

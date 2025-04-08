@@ -7,9 +7,8 @@ import (
 
 	"github.com/TeddyCr/priceitt/service/models/config"
 	"github.com/TeddyCr/priceitt/service/utils/migrations"
-	
-	"gopkg.in/yaml.v2"
 
+	"gopkg.in/yaml.v2"
 )
 
 func run() {

@@ -8,10 +8,11 @@ import (
 	"github.com/TeddyCr/priceitt/service/application/user"
 	"github.com/TeddyCr/priceitt/service/errors"
 	"github.com/TeddyCr/priceitt/service/infrastructure/database"
+	"github.com/TeddyCr/priceitt/service/middleware"
 	authModels "github.com/TeddyCr/priceitt/service/models/generated/auth"
+	"github.com/TeddyCr/priceitt/service/models/generated/createEntities"
 	auth "github.com/TeddyCr/priceitt/service/repository/database/auth"
 	usr "github.com/TeddyCr/priceitt/service/repository/database/user"
-	"github.com/TeddyCr/priceitt/service/models/generated/createEntities"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
 )
@@ -33,7 +34,11 @@ func (ur userResource) Routes() chi.Router {
 	r := chi.NewRouter()
 	r.Post("/", ur.CreateUser)
 	r.Post("/login", ur.Login)
-	r.Post("/logout", ur.Logout)
+
+	r.Group(func(r chi.Router) {
+		r.Use(middleware.JWTCtx)
+		r.Post("/logout", ur.Logout)
+	})
 
 	return r
 }
@@ -89,14 +94,7 @@ func (ur userResource) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ur userResource) Logout(w http.ResponseWriter, r *http.Request) {
-	token := r.Header.Get("Authorization")
-	if token == "" {
-		err := render.Render(w, r, errors.ErrUnauthorized())
-		if err != nil {
-			panic(err)
-		}
-	}
-	_, err := ur._user_handler.(user.UserHandler).Logout(r.Context(), token)
+	_, err := ur._user_handler.(user.UserHandler).Logout(r.Context())
 	if err != nil {
 		err := render.Render(w, r, errors.ErrInternalServer(err))
 		if err != nil {

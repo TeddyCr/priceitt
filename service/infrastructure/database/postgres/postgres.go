@@ -4,12 +4,11 @@ import (
 	"github.com/TeddyCr/priceitt/service/infrastructure/database"
 	"github.com/TeddyCr/priceitt/service/models"
 	dbUtil "github.com/TeddyCr/priceitt/service/utils/database"
-	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
 
 type PersistencePostgres struct {
-	client *sqlx.DB
+	client dbUtil.Executor
 }
 
 func (PersistencePostgres) Initialize(config models.DatabaseConfig) (database.IPersistenceDatabase, error) {
@@ -17,6 +16,6 @@ func (PersistencePostgres) Initialize(config models.DatabaseConfig) (database.IP
 	return PersistencePostgres{client: client}, nil
 }
 
-func (p PersistencePostgres) GetClient() *sqlx.DB {
+func (p PersistencePostgres) GetClient() dbUtil.Executor {
 	return p.client
 }

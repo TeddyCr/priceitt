@@ -1,5 +1,5 @@
 package user_repository
 
 const (
-	GetByEmail = `SELECT json FROM %s WHERE email = $1`
+	GetByEmail = `SELECT json FROM %s WHERE %s AND email = $1`
 )

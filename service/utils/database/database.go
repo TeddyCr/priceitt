@@ -6,13 +6,20 @@ import (
 	"log"
 	"time"
 
-	"github.com/TeddyCr/priceitt/service/serializer"
 	"github.com/TeddyCr/priceitt/service/models"
 	"github.com/TeddyCr/priceitt/service/models/generated"
+	"github.com/TeddyCr/priceitt/service/serializer"
 	"github.com/jmoiron/sqlx"
+	"go.uber.org/multierr"
 
 	_ "github.com/lib/pq" // postgres driver
 )
+
+type Executor interface {
+	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
+	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
+	QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
+}
 
 func Connect(dbConfig models.DatabaseConfig) *sqlx.DB {
 	db, err := sqlx.Connect(
@@ -31,27 +38,74 @@ func Connect(dbConfig models.DatabaseConfig) *sqlx.DB {
 	return db
 }
 
-func PerformEntityQuery(ctx context.Context, db *sqlx.DB, query string, entity generated.IEntity) error {
-	conn, err := db.Conn(ctx)
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
+func PerformEntityQuery(ctx context.Context, db Executor, query string, entity generated.IEntity) error {
 	jsonString, err := serializer.JsonToString(entity)
 	if err != nil {
 		return err
 	}
-	_, err = conn.ExecContext(ctx, query, jsonString)
+	_, err = db.ExecContext(ctx, query, jsonString)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func PerformSelectScalarQuery(ctx context.Context, db *sqlx.DB, query string, name string) (*sql.Row, error) {
-	row := db.QueryRowContext(ctx, query, name)
+func PerformEntityQueryTx(ctx context.Context, tx *sql.Tx, query string, entity generated.IEntity) error {
+	jsonString, err := serializer.JsonToString(entity)
+	if err != nil {
+		return err
+	}
+	_, err = tx.ExecContext(ctx, query, jsonString)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func PerformSelectScalarQueryTx(ctx context.Context, db *sql.Tx, query string, args ...any) (*sql.Row, error) {
+	row := db.QueryRowContext(ctx, query, args...)
 	if row.Err() != nil {
 		return nil, row.Err()
 	}
 	return row, nil
+}
+
+func PerformSelectScalarQuery(ctx context.Context, db Executor, query string, args ...any) (*sql.Row, error) {
+	row := db.QueryRowContext(ctx, query, args...)
+	if row.Err() != nil {
+		return nil, row.Err()
+	}
+	return row, nil
+}
+
+func FinishTx(err error, tx *sql.Tx) error {
+	if err != nil {
+		if rollBackErr := tx.Rollback(); rollBackErr != nil {
+			return multierr.Combine(rollBackErr, err)
+		}
+	} else {
+		if commitErr := tx.Commit(); commitErr != nil {
+			return multierr.Combine(commitErr, err)
+		}
+	}
+	return err
+}
+
+func RunInTx(ctx context.Context, db *sqlx.DB, fn func(tx *sql.Tx) error) error {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		if err := FinishTx(err, tx); err != nil {
+			log.Fatalf("Error finishing tx: #%v", err)
+		}
+	}()
+
+	err = fn(tx)
+	if err != nil {
+		return err
+	}
+	return nil
 }
