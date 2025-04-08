@@ -11,8 +11,8 @@ format: ## format -- Format go code using golangci-lint
 	cd service && golangci-lint fmt
 	cd service && golangci-lint run --fix --issues-exit-code=0 --timeout=10m0s
 
-.PHONY: check
-check: ## check -- Check go code using golangci-lint
+.PHONY: format_check
+format_check: ## format_check -- Check go code using golangci-lint
 	cd service && golangci-lint fmt --diff
 	cd service && golangci-lint run --issues-exit-code=0 --timeout=10m0s
 	
