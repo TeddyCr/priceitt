@@ -1,4 +1,4 @@
-name: Go
+name: Go Checkstyle
 on:
     workflow_dispatch:
     pull_request_target:
