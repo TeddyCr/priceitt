@@ -1,0 +1,42 @@
+name: Go
+on:
+    workflow_dispatch:
+    pull_request_target:
+      types: [labeled, opened, synchronize, reopened, ready_for_review]
+      paths:
+        - "service/**"
+
+jobs:
+  go-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: ${{ !github.event.pull_request.draft }}
+    strategy:
+      fail-fast: false
+    steps:
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: false
+          swap-storage: true
+          docker-images: false
+
+      - uses: actions/checkout@v4
+        with:
+            ref: ${{ github.event.pull_request.head.sha }}
+            fetch-depth: 0
+
+      - name: Setup Go 1.24
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.24
+
+      - name: Display Go version
+        run: go version
+
+      - name: Checkstyle
+        run: make format_check

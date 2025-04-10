@@ -1,4 +1,5 @@
 //go:build migration
+// +build migration
 
 package main
 
@@ -30,7 +31,7 @@ func TestMigrate(t *testing.T) {
 }
 
 func validateMigrations(db *sqlx.DB, t *testing.T) {
-	expectedTableNames := []string{"database_migration_logs", "users"}
+	expectedTableNames := []string{"database_migration_logs", "users", "token_blacklist", "tokens"}
 
 	query := "SELECT COUNT(*) FROM DATABASE_MIGRATION_LOGS;"
 	row := db.QueryRow(query)
@@ -39,7 +40,7 @@ func validateMigrations(db *sqlx.DB, t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	assert.Equal(t, 2, count)
+	assert.Equal(t, 5, count)
 
 	query = "SELECT table_name FROM information_schema.tables WHERE table_catalog = 'edge_authorization_server' AND table_schema = 'public';"
 	rows, _ := db.Query(query)

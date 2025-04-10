@@ -10,8 +10,9 @@ import (
 var lock = &sync.Mutex{}
 
 type Fernet struct {
-	Key  []*fernet.Key
-	Salt []byte
+	Key       []*fernet.Key
+	Salt      []byte
+	KeyString string
 }
 
 var instance *Fernet
@@ -31,5 +32,6 @@ func Initialize(config config.FernetConfig) {
 	instance = &Fernet{
 		fernet.MustDecodeKeys(config.Key),
 		[]byte(config.Salt),
+		config.Key,
 	}
 }

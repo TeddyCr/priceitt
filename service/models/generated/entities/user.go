@@ -9,15 +9,15 @@ import (
 )
 
 type User struct {
-	ID                      uuid.UUID   `json:"id"`
-	Name                    string      `json:"name"`
-	Description             string      `json:"description"`
-	DisplayName             string      `json:"displayName"`
-	UpdatedAt               int64       `json:"updatedAt"`
-	CreatedAt               int64       `json:"createdAt"`
-	Email                   string      `json:"email"`
-	Image50                 string      `json:"image50"`
-	AuthenticationMechanism interface{} `json:"authenticationMechanism"` // map to oneOf
+	ID                      uuid.UUID `json:"id"`
+	Name                    string    `json:"name"`
+	Description             string    `json:"description"`
+	DisplayName             string    `json:"displayName"`
+	UpdatedAt               int64     `json:"updatedAt"`
+	CreatedAt               int64     `json:"createdAt"`
+	Email                   string    `json:"email"`
+	Image50                 string    `json:"image50"`
+	AuthenticationMechanism any       `json:"authenticationMechanism"` // map to oneOf
 }
 
 func (u User) GetID() uuid.UUID {

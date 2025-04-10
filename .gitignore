@@ -35,3 +35,8 @@ $RECYCLE.BIN/
 
 # Docker
 development/docker-volume/
+
+
+# Service
+service/coverage.out
+service/service
