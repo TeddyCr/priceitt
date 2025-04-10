@@ -13,8 +13,6 @@ jobs:
     if: ${{ !github.event.pull_request.draft }}
     strategy:
       fail-fast: false
-      matrix:
-        go-version: [ '1.23', '1.24' ]
     steps:
       - name: Free Disk Space (Ubuntu)
         uses: jlumbroso/free-disk-space@main
@@ -32,25 +30,13 @@ jobs:
             ref: ${{ github.event.pull_request.head.sha }}
             fetch-depth: 0
 
-      - name: Setup Go ${{ matrix.go-version }}
+      - name: Setup Go 1.24
         uses: actions/setup-go@v5
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: 1.24
 
       - name: Display Go version
         run: go version
 
-      - name: Install dependencies
-        run: cd service && go get .
-
-      - name: Compile service
-        run: cd service && go build -o service
-
-      - name: Run unit tests
-        run: make run_unit_tests
-
-      - name: Run integration tests
-        run: make run_integration_tests
-
-      - name: Run migration tests
-        run: make run_migration_tests
+      - name: Checkstyle
+        run: make format_check
