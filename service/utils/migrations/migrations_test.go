@@ -1,3 +1,6 @@
+//go:build migration
+// +build migration
+
 package migrations_test
 
 import (

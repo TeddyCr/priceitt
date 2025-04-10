@@ -6,8 +6,10 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/TeddyCr/priceitt/service/application/user"
+	"github.com/TeddyCr/priceitt/service/errors"
 	"github.com/TeddyCr/priceitt/service/models/types"
+	"github.com/TeddyCr/priceitt/service/utils/jwt"
+	"github.com/go-chi/render"
 )
 
 // JWTCtx is a middleware that validates the JWT token and adds the claims to the context
@@ -15,28 +17,43 @@ func JWTCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get("Authorization")
 		if token == "" {
-			http.Error(w, "Unauthorized: No token provided", http.StatusUnauthorized)
+			err := render.Render(w, r, errors.ErrUnauthorized())
+			if err != nil {
+				panic(err)
+			}
 			return
 		}
 		splitToken := strings.Split(token, "Bearer ")
 		if len(splitToken) != 2 {
-			http.Error(w, "Unauthorized: Invalid token format", http.StatusUnauthorized)
+			err := render.Render(w, r, errors.ErrUnauthorized())
+			if err != nil {
+				panic(err)
+			}
 			return
 		}
 		token = splitToken[1]
 		decodedToken, err := base64.StdEncoding.DecodeString(token)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusUnauthorized)
+			err := render.Render(w, r, errors.ErrUnauthorized())
+			if err != nil {
+				panic(err)
+			}
 			return
 		}
-		claims, err := user.ValidateJWT(string(decodedToken))
+		claims, err := jwt.ValidateJWT(string(decodedToken))
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusUnauthorized)
+			err := render.Render(w, r, errors.ErrUnauthorized())
+			if err != nil {
+				panic(err)
+			}
 			return
 		}
 		userId, err := claims.GetSubject()
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusUnauthorized)
+			err := render.Render(w, r, errors.ErrUnauthorized())
+			if err != nil {
+				panic(err)
+			}
 			return
 		}
 		jwtContextValues := types.JWTContextValues{

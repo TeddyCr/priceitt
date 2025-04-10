@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/TeddyCr/priceitt/service/application"
-	"github.com/TeddyCr/priceitt/service/application/user"
 	"github.com/TeddyCr/priceitt/service/errors"
+	"github.com/TeddyCr/priceitt/service/handler"
+	"github.com/TeddyCr/priceitt/service/handler/user"
 	"github.com/TeddyCr/priceitt/service/infrastructure/database"
 	"github.com/TeddyCr/priceitt/service/middleware"
 	authModels "github.com/TeddyCr/priceitt/service/models/generated/auth"
@@ -27,7 +27,7 @@ func NewUserResource(databasePersitence database.IPersistenceDatabase) IResource
 }
 
 type userResource struct {
-	_user_handler application.IHandler
+	_user_handler handler.IHandler
 }
 
 func (ur userResource) Routes() chi.Router {

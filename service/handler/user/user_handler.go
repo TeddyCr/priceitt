@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"crypto/subtle"
 	"database/sql"
 	"encoding/json"
 	"errors"
@@ -10,6 +11,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/TeddyCr/priceitt/service/handler"
 	"github.com/TeddyCr/priceitt/service/models/generated"
 	"github.com/TeddyCr/priceitt/service/models/generated/auth"
 	"github.com/TeddyCr/priceitt/service/models/generated/createEntities"
@@ -18,27 +20,27 @@ import (
 	goFernet "github.com/fernet/fernet-go"
 	"github.com/go-chi/httplog/v2"
 	"github.com/google/uuid"
-	"golang.org/x/crypto/argon2"
 
-	"github.com/TeddyCr/priceitt/service/application"
-	"github.com/TeddyCr/priceitt/service/infrastructure/fernet"
+	infrastructureFernet "github.com/TeddyCr/priceitt/service/infrastructure/fernet"
 	dbRepo "github.com/TeddyCr/priceitt/service/repository/database"
 	auth_repository "github.com/TeddyCr/priceitt/service/repository/database/auth"
 	user_repository "github.com/TeddyCr/priceitt/service/repository/database/user"
+	"github.com/TeddyCr/priceitt/service/utils/fernet"
+	"github.com/TeddyCr/priceitt/service/utils/jwt"
 )
 
-func NewUserHandler(databaseRepository dbRepo.IDatabaseRepository, authRepository *auth_repository.AuthRepository) application.IHandler {
+func NewUserHandler(databaseRepository dbRepo.IDatabaseRepository, authRepository auth_repository.IAuthRepository) handler.IHandler {
 	return UserHandler{
 		DatabaseRepository: databaseRepository,
 		AuthRepository:     authRepository,
-		fernetInstance:     fernet.GetInstance(),
+		fernetInstance:     infrastructureFernet.GetInstance(),
 	}
 }
 
 type UserHandler struct {
 	DatabaseRepository dbRepo.IDatabaseRepository
-	AuthRepository     *auth_repository.AuthRepository
-	fernetInstance     *fernet.Fernet
+	AuthRepository     auth_repository.IAuthRepository
+	fernetInstance     *infrastructureFernet.Fernet
 }
 
 func (c UserHandler) Create(ctx context.Context, createEntity generated.ICreateEntity) (generated.IEntity, error) {
@@ -50,17 +52,8 @@ func (c UserHandler) Create(ctx context.Context, createEntity generated.ICreateE
 	if err != nil {
 		panic(fmt.Sprintf("failed to validate password: %v", err))
 	}
-	hashedPassword := argon2.IDKey(
-		[]byte(createUser.Password),
-		c.fernetInstance.Salt,
-		1,
-		64*1024,
-		4,
-		32)
-	token, err := goFernet.EncryptAndSign(hashedPassword, c.fernetInstance.Key[0])
-	if err != nil {
-		panic(fmt.Sprintf("failed to encrypt password: %v", err))
-	}
+	hashedPassword := fernet.HashPasswordWithSalt(createUser.Password, c.fernetInstance.Salt)
+	token := fernet.EncryptAndSign(hashedPassword, c.fernetInstance.Key[0])
 	user := c.getUser(createUser, token)
 	err = c.DatabaseRepository.Create(ctx, user)
 	if err != nil {
@@ -159,7 +152,7 @@ func (c UserHandler) createRefreshToken(userEntity *entities.User) *entities.JWT
 	if expirationEnv != "" {
 		expiration, _ = strconv.Atoi(expirationEnv)
 	}
-	refreshToken, err := CreateJWT(expiration, userEntity.ID.String(), "refresh")
+	refreshToken, err := jwt.CreateJWT(expiration, userEntity.ID.String(), "refresh")
 	if err != nil {
 		panic(fmt.Sprintf("failed to create refresh token: %v", err))
 	}
@@ -185,7 +178,7 @@ func (c UserHandler) createAccessToken(userEntity *entities.User) *entities.JWTo
 	if expirationEnv != "" {
 		expiration, _ = strconv.Atoi(expirationEnv)
 	}
-	accessToken, err := CreateJWT(expiration, userEntity.ID.String(), "access")
+	accessToken, err := jwt.CreateJWT(expiration, userEntity.ID.String(), "access")
 	if err != nil {
 		panic(fmt.Sprintf("failed to create access token: %v", err))
 	}
@@ -207,6 +200,6 @@ func (c UserHandler) createAccessToken(userEntity *entities.User) *entities.JWTo
 
 func (c UserHandler) validatePassword(encryptedPassword string, password string) bool {
 	decryptedPassword := goFernet.VerifyAndDecrypt([]byte(encryptedPassword), 0, c.fernetInstance.Key)
-	hashedPassword := argon2.IDKey([]byte(password), []byte(c.fernetInstance.Salt), 1, 64*1024, 4, 32)
-	return string(hashedPassword) == string(decryptedPassword)
+	hashedPassword := fernet.HashPasswordWithSalt(password, c.fernetInstance.Salt)
+	return subtle.ConstantTimeCompare(hashedPassword, decryptedPassword) == 1
 }
