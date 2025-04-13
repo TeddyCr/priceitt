@@ -7,8 +7,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
-	"strconv"
 	"time"
 
 	"github.com/TeddyCr/priceitt/service/handler"
@@ -22,14 +20,14 @@ import (
 	"github.com/google/uuid"
 
 	infrastructureFernet "github.com/TeddyCr/priceitt/service/infrastructure/fernet"
-	dbRepo "github.com/TeddyCr/priceitt/service/repository/database"
+	repository "github.com/TeddyCr/priceitt/service/repository/database"
 	auth_repository "github.com/TeddyCr/priceitt/service/repository/database/auth"
 	user_repository "github.com/TeddyCr/priceitt/service/repository/database/user"
 	"github.com/TeddyCr/priceitt/service/utils/fernet"
 	"github.com/TeddyCr/priceitt/service/utils/jwt"
 )
 
-func NewUserHandler(databaseRepository dbRepo.IDatabaseRepository, authRepository auth_repository.IAuthRepository) handler.IHandler {
+func NewUserHandler(databaseRepository repository.IDatabaseRepository, authRepository auth_repository.IAuthRepository) handler.IHandler {
 	return UserHandler{
 		DatabaseRepository: databaseRepository,
 		AuthRepository:     authRepository,
@@ -38,12 +36,12 @@ func NewUserHandler(databaseRepository dbRepo.IDatabaseRepository, authRepositor
 }
 
 type UserHandler struct {
-	DatabaseRepository dbRepo.IDatabaseRepository
+	DatabaseRepository repository.IDatabaseRepository
 	AuthRepository     auth_repository.IAuthRepository
 	fernetInstance     *infrastructureFernet.Fernet
 }
 
-func (c UserHandler) Create(ctx context.Context, createEntity generated.ICreateEntity) (generated.IEntity, error) {
+func (c UserHandler) Create(ctx context.Context, createEntity generated.ICreateEntity, filter repository.QueryFilter) (generated.IEntity, error) {
 	createUser, ok := createEntity.(*createEntities.CreateUser)
 	if !ok {
 		panic("failed to cast to createEntities.CreateUser")
@@ -62,17 +60,26 @@ func (c UserHandler) Create(ctx context.Context, createEntity generated.ICreateE
 	return user, nil
 }
 
-func (c UserHandler) Login(ctx context.Context, basicAuth auth.BasicAuth) (generated.IEntity, error) {
+func (c UserHandler) GetByName(ctx context.Context, name string, filter repository.QueryFilter) (generated.IEntity, error) {
+	user, err := c.DatabaseRepository.GetByName(ctx, name, filter)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+func (c UserHandler) Login(ctx context.Context, basicAuth auth.BasicAuth) (map[string]generated.IEntity, error) {
 	var logger = httplog.LogEntry(ctx)
 	var user generated.IEntity
 	var err error
-	user, err = c.DatabaseRepository.GetByName(ctx, basicAuth.Username, *dbRepo.NewQueryFilter(nil))
+	user, err = c.DatabaseRepository.GetByName(ctx, basicAuth.Username, *repository.NewQueryFilter(nil))
 	if err != nil {
-		user, err = c.DatabaseRepository.(*user_repository.UserRepository).GetByEmail(ctx, basicAuth.Username, *dbRepo.NewQueryFilter(nil))
+		user, err = c.DatabaseRepository.(*user_repository.UserRepository).GetByEmail(ctx, basicAuth.Username, *repository.NewQueryFilter(nil))
 		if err != nil && errors.Is(err, sql.ErrNoRows) {
-			logger.Error("failed to get user", "error", err)
+			logger.Debug("failed to get user", "error", err)
 			return nil, fmt.Errorf("user [%s] not found", basicAuth.Username)
 		} else if err != nil {
+			logger.Debug("failed to get user", "error", err)
 			return nil, err
 		}
 	}
@@ -94,13 +101,16 @@ func (c UserHandler) Login(ctx context.Context, basicAuth auth.BasicAuth) (gener
 	if !c.validatePassword(auth.Password, basicAuth.Password) {
 		return nil, errors.New("invalid password")
 	}
-	refresh := c.createRefreshToken(userEntity)
-	access := c.createAccessToken(userEntity)
+	refresh := jwt.GetRefreshToken(userEntity.ID)
+	access := jwt.GetAccessToken(userEntity.ID)
 	err = c.AuthRepository.Create(ctx, refresh)
 	if err != nil {
 		return nil, err
 	}
-	return access, nil
+	return map[string]generated.IEntity{
+		"access":  access,
+		"refresh": refresh,
+	}, nil
 }
 
 func (c UserHandler) Logout(ctx context.Context) (string, error) {
@@ -108,23 +118,23 @@ func (c UserHandler) Logout(ctx context.Context) (string, error) {
 	jwtContextValues := ctx.Value("jwtContextValues").(types.JWTContextValues)
 	token, ok := jwtContextValues.Get("token").(string)
 	if !ok {
-		logger.Error(fmt.Sprintf("failed to get token from context: %v", jwtContextValues))
+		logger.Debug(fmt.Sprintf("failed to get token from context: %v", jwtContextValues))
 		return "", errors.New("failed to get token from context")
 	}
 	userId, ok := jwtContextValues.Get("userId").(string)
 	if !ok {
-		logger.Error(fmt.Sprintf("failed to get user id from context: %v", jwtContextValues))
+		logger.Debug(fmt.Sprintf("failed to get user id from context: %v", jwtContextValues))
 		return "", errors.New("failed to get user id from context")
 	}
 
-	user, err := c.DatabaseRepository.GetById(ctx, userId, *dbRepo.NewQueryFilter(nil))
+	user, err := c.DatabaseRepository.GetById(ctx, userId, *repository.NewQueryFilter(nil))
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed to get user: %v", err))
+		logger.Debug(fmt.Sprintf("failed to get user: %v", err))
 		return "", err
 	}
 	err = c.AuthRepository.Logout(ctx, token, *user.(*entities.User))
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed to logout: %v", err))
+		logger.Debug(fmt.Sprintf("failed to logout: %v", err))
 		return "", err
 	}
 
@@ -143,58 +153,6 @@ func (c UserHandler) getUser(createUser *createEntities.CreateUser, encryptedPas
 			Type:     "basic",
 			Password: string(encryptedPassword),
 		},
-	}
-}
-
-func (c UserHandler) createRefreshToken(userEntity *entities.User) *entities.JWToken {
-	var expiration = 999999
-	expirationEnv := os.Getenv("REFRESH_EXPIRATION")
-	if expirationEnv != "" {
-		expiration, _ = strconv.Atoi(expirationEnv)
-	}
-	refreshToken, err := jwt.CreateJWT(expiration, userEntity.ID.String(), "refresh")
-	if err != nil {
-		panic(fmt.Sprintf("failed to create refresh token: %v", err))
-	}
-
-	return &entities.JWToken{
-		ID:             uuid.New(),
-		Name:           types.TokenType(types.RefreshToken).String(),
-		CreatedAt:      time.Now().UnixMilli(),
-		UpdatedAt:      time.Now().UnixMilli(),
-		TokenType:      types.TokenType(types.RefreshToken).String(),
-		Token:          refreshToken,
-		ExpirationDate: time.Now().Add(time.Hour * time.Duration(expiration)).UnixMilli(),
-		UserID:         userEntity.ID,
-		// TODO: get device id and ip from request
-		DeviceID: uuid.New(),
-		IP:       "",
-	}
-}
-
-func (c UserHandler) createAccessToken(userEntity *entities.User) *entities.JWToken {
-	var expiration = 1
-	expirationEnv := os.Getenv("ACCESS_EXPIRATION")
-	if expirationEnv != "" {
-		expiration, _ = strconv.Atoi(expirationEnv)
-	}
-	accessToken, err := jwt.CreateJWT(expiration, userEntity.ID.String(), "access")
-	if err != nil {
-		panic(fmt.Sprintf("failed to create access token: %v", err))
-	}
-
-	return &entities.JWToken{
-		ID:             uuid.New(),
-		CreatedAt:      time.Now().UnixMilli(),
-		UpdatedAt:      time.Now().UnixMilli(),
-		TokenType:      types.TokenType(types.AccessToken).String(),
-		Name:           types.TokenType(types.AccessToken).String(),
-		Token:          accessToken,
-		ExpirationDate: time.Now().Add(time.Hour * time.Duration(expiration)).UnixMilli(),
-		UserID:         userEntity.ID,
-		// TODO: get device id and ip from request
-		DeviceID: uuid.New(),
-		IP:       "",
 	}
 }
 

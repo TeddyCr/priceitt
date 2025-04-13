@@ -63,3 +63,7 @@ func (q *QueryFilter) Args() []any {
 	}
 	return args
 }
+
+func (q *QueryFilter) Add(key string, value string) {
+	q.Filter[key] = value
+}
