@@ -14,4 +14,4 @@ jobs:
     strategy:
         fail-fast: false
     steps:
-      - run: 'echo "Step is not required"'
+      - run: 'echo "Step is not required!"'
