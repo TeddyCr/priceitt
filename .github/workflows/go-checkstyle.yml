@@ -5,10 +5,11 @@ on:
       types: [labeled, opened, synchronize, reopened, ready_for_review]
       paths:
         - "service/**"
-    pull_request:
-      branches: 
+    push:
+      branches:
         - main
-      types: [closed]
+      paths:
+        - "service/**"
 
 jobs:
   go-test:
