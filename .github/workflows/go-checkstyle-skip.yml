@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 jobs:
-  py-run-tests:
+  go-checkstyle:
     runs-on: ubuntu-latest
     strategy:
         fail-fast: false

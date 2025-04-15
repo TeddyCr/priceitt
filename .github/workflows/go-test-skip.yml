@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 jobs:
-  py-run-tests:
+  go-compile-and-test:
     runs-on: ubuntu-latest
     strategy:
         matrix:
