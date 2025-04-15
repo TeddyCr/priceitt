@@ -5,6 +5,10 @@ on:
       types: [labeled, opened, synchronize, reopened, ready_for_review]
       paths:
         - "service/**"
+    pull_request:
+      branches: 
+        - main
+      types: [closed]
 
 jobs:
   go-test:
@@ -46,5 +50,5 @@ jobs:
       - name: Compile service
         run: cd service && go build -o service
 
-      - name: Run unit tests
+      - name: Run All tests
         run: make run_all_tests
