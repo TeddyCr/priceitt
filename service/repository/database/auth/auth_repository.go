@@ -12,6 +12,7 @@ import (
 	"github.com/TeddyCr/priceitt/service/models/types"
 	repository "github.com/TeddyCr/priceitt/service/repository/database"
 	utilDB "github.com/TeddyCr/priceitt/service/utils/database"
+	"github.com/go-chi/httplog/v2"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
@@ -49,7 +50,16 @@ func (a *AuthRepository) GetById(ctx context.Context, id string, filter reposito
 }
 
 func (a *AuthRepository) GetByName(ctx context.Context, name string, filter repository.QueryFilter) (generated.IEntity, error) { // (entities.User, error) {
-	return nil, nil
+	query := fmt.Sprintf(repository.GetByName, "tokens", filter.String())
+	row, err := utilDB.PerformSelectScalarQuery(ctx, a.client, query, filter.Args()...)
+	if err != nil {
+		return nil, err
+	}
+	token, err := marshalRow(row)
+	if err != nil {
+		return nil, err
+	}
+	return token, nil
 }
 
 func (a *AuthRepository) UpdateById(ctx context.Context, id string, entity generated.IEntity, filter repository.QueryFilter) error {
@@ -122,6 +132,7 @@ func (a *AuthRepository) Logout(ctx context.Context, token string, user entities
 			Token:     token,
 			TokenType: types.TokenType(types.AccessToken).String(),
 			UserID:    user.ID,
+			Name:      "access",
 		}); err != nil {
 			return err
 		}
@@ -132,6 +143,25 @@ func (a *AuthRepository) Logout(ctx context.Context, token string, user entities
 		return err
 	}
 	return nil
+}
+
+func (a *AuthRepository) GetBlacklistToken(ctx context.Context, token string, filter repository.QueryFilter) (generated.IEntity, error) {
+	logger := httplog.LogEntry(ctx)
+	query := fmt.Sprintf(GetBlacklistToken, filter.String())
+	row, err := utilDB.PerformSelectScalarQuery(ctx, a.client, query, append(filter.Args(), token)...)
+	if err != nil {
+		logger.Debug("No rows found", "error", err)
+		return nil, err
+	}
+
+	marshaledRow, err := marshalRow(row)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return marshaledRow, nil
 }
 
 func marshalRow(row *sql.Row) (generated.IEntity, error) {

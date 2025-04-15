@@ -20,6 +20,7 @@ import (
 	repository "github.com/TeddyCr/priceitt/service/repository/database"
 	dbUtils "github.com/TeddyCr/priceitt/service/utils/database"
 	"github.com/TeddyCr/priceitt/service/utils/fernet"
+	"github.com/TeddyCr/priceitt/service/utils/jwt"
 	goFernet "github.com/fernet/fernet-go"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -175,7 +176,7 @@ func TestUserHandler_Create(t *testing.T) {
 		ConfirmPassword: password,
 	}
 	ctx := context.Background()
-	user, err := userHandler.Create(ctx, createUser)
+	user, err := userHandler.Create(ctx, createUser, repository.QueryFilter{})
 	if err != nil {
 		t.Fatalf("failed to create user: %v", err)
 	}
@@ -192,11 +193,11 @@ func TestUserHandler_Login(t *testing.T) {
 	initFernet()
 	initJWT()
 	userHandler := getUserHandler()
-	accessToken, err := userHandler.(UserHandler).Login(context.Background(), auth.BasicAuth{
+	token, err := userHandler.(UserHandler).Login(context.Background(), auth.BasicAuth{
 		Username: "test",
 		Password: "passWord12345!!!",
 	})
-	accessTokenEntity, _ := accessToken.(*entities.JWToken)
+	accessTokenEntity := token["access"].(*entities.JWToken)
 	assert.NoError(t, err)
 	assert.NotNil(t, accessTokenEntity.ID)
 	assert.NotNil(t, accessTokenEntity.CreatedAt)
@@ -244,7 +245,7 @@ func TestCreateTokens(t *testing.T) {
 
 	user := userHandler.(UserHandler).getUser(createUser, []byte(password))
 	userEntity, _ := user.(*entities.User)
-	refreshToken := userHandler.(UserHandler).createRefreshToken(userEntity)
+	refreshToken := jwt.GetRefreshToken(userEntity.ID)
 	assert.NotNil(t, refreshToken)
 	assert.NotNil(t, refreshToken.ID)
 	assert.NotNil(t, refreshToken.CreatedAt)
@@ -255,7 +256,7 @@ func TestCreateTokens(t *testing.T) {
 	assert.NotNil(t, refreshToken.Token)
 	assert.NotNil(t, refreshToken.ExpirationDate)
 
-	accessToken := userHandler.(UserHandler).createAccessToken(userEntity)
+	accessToken := jwt.GetAccessToken(userEntity.ID)
 	assert.NotNil(t, accessToken)
 	assert.NotNil(t, accessToken.ID)
 	assert.NotNil(t, accessToken.CreatedAt)

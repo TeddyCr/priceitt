@@ -38,5 +38,9 @@ jobs:
       - name: Display Go version
         run: go version
 
-      - name: Checkstyle
-        run: make format_check
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v7
+        with:
+          version: v2.0
+          verify: true
+          args: --timeout=10m0s

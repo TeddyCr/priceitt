@@ -20,10 +20,10 @@ func TestQueryFilter(t *testing.T) {
 		"city": "Montreal",
 		"name": "test",
 	})
-	assert.Equal(t, filter.String(), "city=$2 AND name=$3")
+	assert.True(t, filter.String() == "city=$2 AND name=$3" || filter.String() == "name=$2 AND city=$3")
 
 	formattedQuery := fmt.Sprintf(GetById, "test", filter.String())
-	assert.Equal(t, formattedQuery, "SELECT json FROM test WHERE id = $1 AND city=$2 AND name=$3")
+	assert.True(t, formattedQuery == "SELECT json FROM test WHERE id = $1 AND city=$2 AND name=$3")
 
 	filter = NewQueryFilter(map[string]string{})
 	assert.Equal(t, filter.String(), "True")

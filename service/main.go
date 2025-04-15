@@ -54,6 +54,7 @@ func mountRoutes(r chi.Router, config config.Config) {
 	if err != nil {
 		panic(err)
 	}
+	r.Mount("/api/v1/auth", resource.NewAuthResource(pq).Routes())
 	r.Mount("/api/v1/user", resource.NewUserResource(pq).Routes())
 }
 
