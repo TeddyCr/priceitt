@@ -18,11 +18,11 @@ const SignInWithGoogle: React.FC<SignInWithGoogleProps> = ({
       activeOpacity={0.8}
     >
       <View style={styles.buttonContent}>
-        <Image 
+        {/* <Image 
           source={require('@/assets/images/google-logo.png')} 
           style={styles.logo}
           resizeMode="contain"
-        />
+        /> */}
         <Text style={styles.text}>{text}</Text>
       </View>
     </TouchableOpacity>
