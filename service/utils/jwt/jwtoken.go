@@ -89,6 +89,15 @@ func IsAccessToken(claims jwt.MapClaims) bool {
 	return tokenType == types.TokenType(types.AccessToken).String()
 }
 
+func ValidateIssuer(claims jwt.MapClaims) bool {
+	issuer, ok := claims["iss"].(string)
+	if !ok {
+		return false
+	}
+	jwtInstance := jwt_secret.GetInstance()
+	return issuer == jwtInstance.Issuer
+}
+
 func GetRefreshToken(userId uuid.UUID) *entities.JWToken {
 	var expiration = 999999
 	expirationEnv := os.Getenv("REFRESH_EXPIRATION")
