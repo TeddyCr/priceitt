@@ -169,11 +169,11 @@ func TestUserHandler_Create(t *testing.T) {
 	userHandler := getUserHandler()
 
 	createUser := &createEntities.CreateUser{
-		Name:            "test",
-		Email:           "example@email.com",
-		AuthType:        "basic",
+		Name:     "test",
+		Email:    "example@email.com",
+		AuthType: "basic",
 		AuthMechanism: auth.Basic{
-			Type:     "basic",
+			Type:            "basic",
 			Password:        password,
 			ConfirmPassword: password,
 		},
@@ -199,7 +199,7 @@ func TestUserHandler_Login(t *testing.T) {
 	token, err := userHandler.(UserHandler).Login(context.Background(), auth.AuthEncapsulation{
 		Type:     "basic",
 		Username: "test",
-		Data:     json.RawMessage(auth.Basic{
+		Data: json.RawMessage(auth.Basic{
 			Password: "passWord12345!!!",
 			Type:     "basic",
 		}),
@@ -219,11 +219,11 @@ func TestUserHandler_Login(t *testing.T) {
 func TestGetUser(t *testing.T) {
 	password := "passWord12345!!!"
 	createUser := &createEntities.CreateUser{
-		Name:            "test",
-		Email:           "example@email.com",
-		AuthType:        "basic",
+		Name:     "test",
+		Email:    "example@email.com",
+		AuthType: "basic",
 		AuthMechanism: auth.Basic{
-			Type:     "basic",
+			Type:            "basic",
 			Password:        password,
 			ConfirmPassword: password,
 		},
@@ -245,11 +245,11 @@ func TestCreateTokens(t *testing.T) {
 	initJWT()
 	password := "passWord12345!!!"
 	createUser := &createEntities.CreateUser{
-		Name:            "test",
-		Email:           "example@email.com",
-		AuthType:        "basic",
+		Name:     "test",
+		Email:    "example@email.com",
+		AuthType: "basic",
 		AuthMechanism: auth.Basic{
-			Type:     "basic",
+			Type:            "basic",
 			Password:        password,
 			ConfirmPassword: password,
 		},

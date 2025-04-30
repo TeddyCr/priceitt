@@ -1,9 +1,9 @@
 package auth
 
 type Basic struct {
-	Password string `json:"password"`
+	Password        string `json:"password"`
 	ConfirmPassword string `json:"confirmPassword"`
-	Type     string `json:"type"`
+	Type            string `json:"type"`
 }
 
 func (b Basic) GetAuthType() string {

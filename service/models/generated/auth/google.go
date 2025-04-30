@@ -1,8 +1,8 @@
 package auth
 
 type Google struct {
-	Type string `json:"type"`
-	IdToken string `json:"idToken"`
+	Type     string `json:"type"`
+	IdToken  string `json:"idToken"`
 	Audience string `json:"audience"`
 }
 

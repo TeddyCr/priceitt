@@ -7,9 +7,9 @@ type BaseAuthMechanism interface {
 }
 
 type AuthEncapsulation struct {
-	Type string `json:"type"`
-	Username string `json:"username"`
-	Data json.RawMessage `json:"data"`
+	Type     string          `json:"type"`
+	Username string          `json:"username"`
+	Data     json.RawMessage `json:"data"`
 }
 
 func (a AuthEncapsulation) GetAuthType() string {

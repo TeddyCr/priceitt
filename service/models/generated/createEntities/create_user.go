@@ -8,10 +8,10 @@ import (
 )
 
 type CreateUser struct {
-	Name            string `json:"name"`
-	Email           string `json:"email"`
-	AuthType        string `json:"authType"`
-	AuthMechanism   any 	`json:"authMechanism"`
+	Name          string `json:"name"`
+	Email         string `json:"email"`
+	AuthType      string `json:"authType"`
+	AuthMechanism any    `json:"authMechanism"`
 }
 
 func (c *CreateUser) ValidatePassword() error {
@@ -77,11 +77,11 @@ func (c *CreateUser) Bind(r *http.Request) error {
 
 func (c *CreateUser) Render(w http.ResponseWriter, r *http.Request) error {
 	switch c.AuthType {
-		case "basic":
-			c.AuthMechanism.(*auth.Basic).Password = ""
-			c.AuthMechanism.(*auth.Basic).ConfirmPassword = ""
-		case "google":
-			c.AuthMechanism.(*auth.Google).IdToken = ""
+	case "basic":
+		c.AuthMechanism.(*auth.Basic).Password = ""
+		c.AuthMechanism.(*auth.Basic).ConfirmPassword = ""
+	case "google":
+		c.AuthMechanism.(*auth.Google).IdToken = ""
 	}
 	return nil
 }

@@ -7,9 +7,9 @@ import (
 	"github.com/TeddyCr/priceitt/service/models/generated/auth"
 	"github.com/TeddyCr/priceitt/service/models/generated/createEntities"
 	"github.com/stretchr/testify/assert"
-	"testing"
-	"path/filepath"
 	"os"
+	"path/filepath"
+	"testing"
 )
 
 func TestValidateJsonSchemaValid(t *testing.T) {
@@ -20,11 +20,11 @@ func TestValidateJsonSchemaValid(t *testing.T) {
 	rootPath := filepath.Dir(filepath.Dir(cwd))
 	userSchemaPath := "file:///" + filepath.Join(rootPath, "models", "schema", "createEntities", "createUser.json")
 	user := createEntities.CreateUser{
-		Name:            "Jane Smith",
-		Email:           "foo@bar.com",
-		AuthType:        "basic",
+		Name:     "Jane Smith",
+		Email:    "foo@bar.com",
+		AuthType: "basic",
 		AuthMechanism: auth.Basic{
-			Type:     "basic",
+			Type:            "basic",
 			Password:        "Password123!@#!!",
 			ConfirmPassword: "Password123!@#!!",
 		},
@@ -44,11 +44,11 @@ func TestValidateJsonSchemaInvalidLength(t *testing.T) {
 	rootPath := filepath.Dir(filepath.Dir(cwd))
 	userSchemaPath := "file:///" + filepath.Join(rootPath, "models", "schema", "createEntities", "createUser.json")
 	user := createEntities.CreateUser{
-		Name:            "Jane Smith",
-		Email:           "foo@bar.com",
-		AuthType:        "basic",
+		Name:     "Jane Smith",
+		Email:    "foo@bar.com",
+		AuthType: "basic",
 		AuthMechanism: auth.Basic{
-			Type:     "basic",
+			Type:            "basic",
 			Password:        "Password12",
 			ConfirmPassword: "Password12",
 		},
@@ -60,8 +60,6 @@ func TestValidateJsonSchemaInvalidLength(t *testing.T) {
 	assert.False(t, validationResult.IsValid)
 }
 
-
-
 func TestValidateJsonSchemaInvalidCharcters(t *testing.T) {
 	t.Skip("Skipping this test as pattern validation is not working")
 	cwd, err := os.Getwd()
@@ -71,11 +69,11 @@ func TestValidateJsonSchemaInvalidCharcters(t *testing.T) {
 	rootPath := filepath.Dir(filepath.Dir(cwd))
 	userSchemaPath := "file:///" + filepath.Join(rootPath, "models", "schema", "createEntities", "createUser.json")
 	user := createEntities.CreateUser{
-		Name:            "Jane Smith",
-		Email:           "foo@bar.com",
-		AuthType:        "basic",
+		Name:     "Jane Smith",
+		Email:    "foo@bar.com",
+		AuthType: "basic",
 		AuthMechanism: auth.Basic{
-			Type:     "basic",
+			Type:            "basic",
 			Password:        "Password123456789",
 			ConfirmPassword: "Password123456789",
 		},

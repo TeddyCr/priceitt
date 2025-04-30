@@ -51,22 +51,22 @@ func (c UserHandler) Create(ctx context.Context, createEntity generated.ICreateE
 
 	var encryptedSecret []byte
 	switch createUser.AuthType {
-		case "basic":
-			err := createUser.ValidatePassword()
-			if err != nil {
-				panic(fmt.Sprintf("failed to validate password: %v", err))
-			}
-			authMechanism := createUser.AuthMechanism.(auth.Basic)
-			hashedSecret := fernet.HashPasswordWithSalt(authMechanism.Password, c.fernetInstance.Salt)
-			encryptedSecret = fernet.EncryptAndSign(hashedSecret, c.fernetInstance.Key[0])
-		case "google":
-			err := c.handleGoogleAuth(createUser.AuthMechanism.(auth.Google))
-			if err != nil {
-				panic(fmt.Sprintf("failed to validate google auth: %v", err))
-			}
-			authMechanism := createUser.AuthMechanism.(auth.Google)
-			hashedSecret := fernet.HashPasswordWithSalt(authMechanism.IdToken, c.fernetInstance.Salt)
-			encryptedSecret = fernet.EncryptAndSign(hashedSecret, c.fernetInstance.Key[0])
+	case "basic":
+		err := createUser.ValidatePassword()
+		if err != nil {
+			panic(fmt.Sprintf("failed to validate password: %v", err))
+		}
+		authMechanism := createUser.AuthMechanism.(auth.Basic)
+		hashedSecret := fernet.HashPasswordWithSalt(authMechanism.Password, c.fernetInstance.Salt)
+		encryptedSecret = fernet.EncryptAndSign(hashedSecret, c.fernetInstance.Key[0])
+	case "google":
+		err := c.handleGoogleAuth(createUser.AuthMechanism.(auth.Google))
+		if err != nil {
+			panic(fmt.Sprintf("failed to validate google auth: %v", err))
+		}
+		authMechanism := createUser.AuthMechanism.(auth.Google)
+		hashedSecret := fernet.HashPasswordWithSalt(authMechanism.IdToken, c.fernetInstance.Salt)
+		encryptedSecret = fernet.EncryptAndSign(hashedSecret, c.fernetInstance.Key[0])
 	}
 
 	user := c.getUser(createUser, encryptedSecret)
@@ -109,12 +109,12 @@ func (c UserHandler) Login(ctx context.Context, authEncapsuler auth.AuthEncapsul
 		return nil, errors.New("failed to cast to entities.User")
 	}
 	switch authMechanism.GetAuthType() {
-		case "basic":
-			err = c.handleBasicAuth(userEntity, authMechanism.(auth.Basic))
-		case "google":
-			err = c.handleGoogleAuth(authMechanism.(auth.Google))
-		default:
-			return nil, errors.New("invalid auth type")
+	case "basic":
+		err = c.handleBasicAuth(userEntity, authMechanism.(auth.Basic))
+	case "google":
+		err = c.handleGoogleAuth(authMechanism.(auth.Google))
+	default:
+		return nil, errors.New("invalid auth type")
 	}
 	if err != nil {
 		return nil, err
@@ -162,25 +162,25 @@ func (c UserHandler) Logout(ctx context.Context) (string, error) {
 func (c UserHandler) getUser(createUser *createEntities.CreateUser, encryptedPassword []byte) generated.IEntity {
 	var authMechanism auth.BaseAuthMechanism
 	switch createUser.AuthType {
-		case "basic":
-			authMechanism = auth.Basic{
-				Type:     "basic",
-				Password: string(encryptedPassword),
-			}
-		case "google":
-			authMechanism = auth.Google{
-				Type:     "google",
-				IdToken:  createUser.AuthMechanism.(auth.Google).IdToken,
-				Audience: os.Getenv("GOOGLE_CLIENT_ID"),
-			}
+	case "basic":
+		authMechanism = auth.Basic{
+			Type:     "basic",
+			Password: string(encryptedPassword),
+		}
+	case "google":
+		authMechanism = auth.Google{
+			Type:     "google",
+			IdToken:  createUser.AuthMechanism.(auth.Google).IdToken,
+			Audience: os.Getenv("GOOGLE_CLIENT_ID"),
+		}
 	}
 	now := time.Now().UnixMilli()
 	return &entities.User{
-		ID:        uuid.New(),
-		Name:      createUser.Name,
-		CreatedAt: now,
-		UpdatedAt: now,
-		Email:     createUser.Email,
+		ID:                      uuid.New(),
+		Name:                    createUser.Name,
+		CreatedAt:               now,
+		UpdatedAt:               now,
+		Email:                   createUser.Email,
 		AuthenticationMechanism: authMechanism,
 	}
 }
