@@ -1,6 +1,5 @@
 {
     "schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://priceitt.xyz/schema/createEntities/createUser.json",
     "title": "Create User",
     "description": "Schema for creating a user",
     "type": "object",
@@ -17,19 +16,15 @@
         "authType": {
             "type": "string",
             "description": "The type of authentication",
-            "const": "basic"
+            "enum": ["basic", "google"]
         },
-        "password": {
-            "type": "string",
-            "description": "The password of the user",
-            "pattern": "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[!@#$%^&*]).{16,}$",
-            "minLength": 16
-        },
-        "confirmPassword": {
-            "type": "string",
-            "description": "The password of the user",
-            "pattern": "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[!@#$%^&*]).{16,}$",
-            "minLength": 16
+        "authMechanism": {
+            "type": "object",
+            "description": "The mechanism of authentication",
+            "oneOf": [
+                { "$ref": "../auth/basic.json" },
+                { "$ref": "../auth/google.json" }
+            ]
         }
     },
     "additionalProperties": false,

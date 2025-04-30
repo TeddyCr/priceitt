@@ -3,14 +3,15 @@ package createEntities
 import (
 	"errors"
 	"net/http"
+
+	"github.com/TeddyCr/priceitt/service/models/generated/auth"
 )
 
 type CreateUser struct {
 	Name            string `json:"name"`
 	Email           string `json:"email"`
-	Password        string `json:"password"`
-	ConfirmPassword string `json:"confirmPassword"`
 	AuthType        string `json:"authType"`
+	AuthMechanism   any 	`json:"authMechanism"`
 }
 
 func (c *CreateUser) ValidatePassword() error {
@@ -27,14 +28,14 @@ func (c *CreateUser) ValidatePassword() error {
 }
 
 func (c *CreateUser) ValidatePasswordLength() error {
-	if len(c.Password) < 16 {
+	if len(c.AuthMechanism.(auth.Basic).Password) < 16 {
 		return errors.New("password must be at least 16 characters")
 	}
 	return nil
 }
 
 func (c *CreateUser) ValidateConfirmPassword() error {
-	if c.Password != c.ConfirmPassword {
+	if c.AuthMechanism.(auth.Basic).Password != c.AuthMechanism.(auth.Basic).ConfirmPassword {
 		return errors.New("passwords do not match")
 	}
 	return nil
@@ -46,7 +47,7 @@ func (c *CreateUser) ValidatePasswordCharacters() error {
 	hasNumber := false
 	hasSpecial := false
 
-	for _, char := range c.Password {
+	for _, char := range c.AuthMechanism.(auth.Basic).Password {
 		switch {
 		case 'A' <= char && char <= 'Z':
 			hasUpper = true
@@ -75,7 +76,12 @@ func (c *CreateUser) Bind(r *http.Request) error {
 }
 
 func (c *CreateUser) Render(w http.ResponseWriter, r *http.Request) error {
-	c.Password = ""
-	c.ConfirmPassword = ""
+	switch c.AuthType {
+		case "basic":
+			c.AuthMechanism.(*auth.Basic).Password = ""
+			c.AuthMechanism.(*auth.Basic).ConfirmPassword = ""
+		case "google":
+			c.AuthMechanism.(*auth.Google).IdToken = ""
+	}
 	return nil
 }

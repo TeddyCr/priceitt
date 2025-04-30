@@ -43,3 +43,7 @@ service/service
 
 # ux
 ux
+
+# env
+/**/.env
+

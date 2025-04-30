@@ -1,14 +1,16 @@
-import { apiFetch } from "@/components/api/apiFetcher";
+import { CreateUserBasic } from "@/components/api/CreateUserBasic";
 import { styles } from "@/components/styles/Generic";
 import { TopNav } from "@/components/styles/TopNav";
 import { Alert } from "@/components/ui/Alert";
 import GreenPressable from "@/components/ui/GreenPressable";
+import SignInWithGoogle from "@/components/ui/SignInWithGoogle";
 import { TransparentTextInput } from "@/components/ui/TransparentTextInput";
 import ValidateEmail from "@/components/validators/ValidateEmail";
 import ValidatePassword, { ValidateConfirmPassword } from "@/components/validators/ValidatePassword";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { View, Text, SafeAreaView } from "react-native";
+import { View, Text, SafeAreaView, StyleSheet } from "react-native";
+
 
 export default function CreateAccount() {
     const [email, setEmail] = useState('');
@@ -19,6 +21,13 @@ export default function CreateAccount() {
     
     const handleDismissAlert = () => {
         setAlert(null);
+    }
+
+    const handleOnError = (message: string) => {
+        setAlert({
+            type: 'error',
+            message: message,
+        });
     }
 
     useEffect(() => {
@@ -51,8 +60,14 @@ export default function CreateAccount() {
                     />
                 )
             }
-            <View style={{flex: 1}}>
+            <View style={{flex: 1, marginBottom: 40}}>
                 <Text style={styles.titleText}>Create Account</Text>
+            </View>
+            <SignInWithGoogle text="Continue with Google" onError={handleOnError} />
+            <View style={sheetStyles.orContainer}>
+                <View style={sheetStyles.horizontalLine} />
+                <Text style={sheetStyles.orText}>OR</Text>
+                <View style={sheetStyles.horizontalLine} />
             </View>
             <TransparentTextInput
                 placeholder="Full Name"
@@ -89,28 +104,23 @@ export default function CreateAccount() {
                           ValidateConfirmPassword(password, confirmPassword) !== null}
                 onPress={async () => {
                     try {
-                        await apiFetch('/api/v1/user', {
-                            method: 'POST',
-                            body: JSON.stringify({
-                                name: fullName,
-                                email: email,
-                                password: password,
-                                confirmPassword: confirmPassword,
-                                authType: 'basic'
-                            })
-                        })
-                        router.push('/');
+                        await CreateUserBasic(fullName, email, password, confirmPassword);
                     } catch (error) {
                         if (error instanceof Error && error.cause) {
-                            const errorData = error.cause as { message: string };
+                            const errorData = error.cause as { message: string, error: string };
                             setAlert({
                                 type: 'error',
                                 message: errorData.error,
                             });
+                        } else if (error instanceof Error) {
+                            setAlert({
+                                type: 'error',
+                                message: error.message,
+                            });
                         } else {
                             setAlert({
                                 type: 'error',
-                                message: 'An unknown error occurred',
+                                message: String(error),
                             });
                         }
                     }
@@ -124,3 +134,24 @@ export default function CreateAccount() {
         </SafeAreaView>
     );
 }
+
+
+const sheetStyles = StyleSheet.create({
+    orContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginVertical: 15,
+        width: '100%',
+    },
+    horizontalLine: {
+        flex: 1,
+        height: 2,
+        backgroundColor: '#2c4d5c',
+        marginHorizontal: 15,
+    },
+    orText: {
+        color: '#2c4d5c',
+        fontSize: 16,
+    },
+});

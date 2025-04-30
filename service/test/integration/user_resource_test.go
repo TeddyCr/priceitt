@@ -29,9 +29,12 @@ func createUser() (*http.Response, error) {
 	body := []byte(`{
 		"name": "John Doe",
 		"email": "john.d@example.com",
-		"password": "*lX1t6r8};k}8VPYEk",
-		"confirmPassword": "*lX1t6r8};k}8VPYEk",
-		"authType": "basic"
+		"authType": "basic",
+		"authMechanism": {
+			"type": "basic",
+			"password": "*lX1t6r8};k}8VPYEk",
+			"confirmPassword": "*lX1t6r8};k}8VPYEk"
+		}
 	}`)
 	bodyReader := bytes.NewReader(body)
 
@@ -72,8 +75,11 @@ func TestCreateUser(t *testing.T) {
 func TestLogin(t *testing.T) {
 	createUser() //nolint:errcheck
 	body := []byte(`{
+		"authType": "basic",
 		"username": "John Doe",
-		"password": "*lX1t6r8};k}8VPYEk"
+		"data": {
+			"password": "*lX1t6r8};k}8VPYEk"
+		}
 	}`)
 	bodyReader := bytes.NewReader(body)
 
@@ -106,8 +112,11 @@ func TestLogin(t *testing.T) {
 func TestLogOut(t *testing.T) {
 	createUser() //nolint:errcheck
 	body := []byte(`{
+		"authType": "basic",
 		"username": "John Doe",
-		"password": "*lX1t6r8};k}8VPYEk"
+		"data": {
+			"password": "*lX1t6r8};k}8VPYEk"
+		}
 	}`)
 	bodyReader := bytes.NewReader(body)
 

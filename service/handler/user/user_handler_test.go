@@ -172,8 +172,11 @@ func TestUserHandler_Create(t *testing.T) {
 		Name:            "test",
 		Email:           "example@email.com",
 		AuthType:        "basic",
-		Password:        password,
-		ConfirmPassword: password,
+		AuthMechanism: auth.Basic{
+			Type:     "basic",
+			Password:        password,
+			ConfirmPassword: password,
+		},
 	}
 	ctx := context.Background()
 	user, err := userHandler.Create(ctx, createUser, repository.QueryFilter{})
@@ -193,9 +196,13 @@ func TestUserHandler_Login(t *testing.T) {
 	initFernet()
 	initJWT()
 	userHandler := getUserHandler()
-	token, err := userHandler.(UserHandler).Login(context.Background(), auth.BasicAuth{
+	token, err := userHandler.(UserHandler).Login(context.Background(), auth.AuthEncapsulation{
+		Type:     "basic",
 		Username: "test",
-		Password: "passWord12345!!!",
+		Data:     json.RawMessage(auth.Basic{
+			Password: "passWord12345!!!",
+			Type:     "basic",
+		}),
 	})
 	accessTokenEntity := token["access"].(*entities.JWToken)
 	assert.NoError(t, err)
@@ -215,8 +222,11 @@ func TestGetUser(t *testing.T) {
 		Name:            "test",
 		Email:           "example@email.com",
 		AuthType:        "basic",
-		Password:        password,
-		ConfirmPassword: password,
+		AuthMechanism: auth.Basic{
+			Type:     "basic",
+			Password:        password,
+			ConfirmPassword: password,
+		},
 	}
 	userHandler := getUserHandler()
 
@@ -238,8 +248,11 @@ func TestCreateTokens(t *testing.T) {
 		Name:            "test",
 		Email:           "example@email.com",
 		AuthType:        "basic",
-		Password:        password,
-		ConfirmPassword: password,
+		AuthMechanism: auth.Basic{
+			Type:     "basic",
+			Password:        password,
+			ConfirmPassword: password,
+		},
 	}
 	userHandler := getUserHandler()
 

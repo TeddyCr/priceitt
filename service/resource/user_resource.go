@@ -71,8 +71,8 @@ func (ur userResource) CreateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ur userResource) Login(w http.ResponseWriter, r *http.Request) {
-	var basicAuth authModels.BasicAuth
-	err := json.NewDecoder(r.Body).Decode(&basicAuth)
+	var authEncapsuler authModels.AuthEncapsulation
+	err := json.NewDecoder(r.Body).Decode(&authEncapsuler)
 	if err != nil {
 		err := render.Render(w, r, errors.ErrInvalidRequest(err))
 		if err != nil {
@@ -80,7 +80,7 @@ func (ur userResource) Login(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	tokens, err := ur._user_handler.(user.UserHandler).Login(r.Context(), basicAuth)
+	tokens, err := ur._user_handler.(user.UserHandler).Login(r.Context(), authEncapsuler)
 	if err != nil {
 		err := render.Render(w, r, errors.ErrInternalServer(err))
 		if err != nil {

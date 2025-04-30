@@ -41,7 +41,7 @@ export default function AuthProvider({children}: {children: React.ReactNode}) {
     const signOut = useCallback(async () => {
         await AsyncStorage.removeItem('@accessToken');
         tokenRef.current = null;
-        router.replace('/login');
+        router.replace('/');
     }, [])
 
     return (
