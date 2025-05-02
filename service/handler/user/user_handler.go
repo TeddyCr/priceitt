@@ -177,7 +177,7 @@ func (c UserHandler) getUser(createUser *createEntities.CreateUser, encryptedPas
 	case "google":
 		authMechanism = auth.Google{
 			Type:     "google",
-			IdToken:  createUser.AuthMechanism.(auth.Google).IdToken,
+			IdToken:  createUser.AuthMechanism.(map[string]interface{})["idToken"].(string),
 			Audience: os.Getenv("GOOGLE_CLIENT_ID"),
 		}
 	}

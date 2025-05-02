@@ -43,7 +43,6 @@ export default function Login(): ReactNode {
         <TransparentPressable>
           <Text style={styles.transparentPressableText}>Login</Text>
         </TransparentPressable>
-        <SignInWithGoogle onPress={signInWithGoogle} />
       </View>
     </SafeAreaView>
   );
