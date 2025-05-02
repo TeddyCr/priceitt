@@ -54,6 +54,9 @@ func (c UserHandler) Create(ctx context.Context, createEntity generated.ICreateE
 	switch createUser.AuthType {
 	case "basic":
 		authMechanism, err := serializer.DeSerBasicAuthMechanism(createUser.AuthMechanism.(map[string]interface{}))
+		if err != nil {
+			return nil, err
+		}
 		err = createUser.ValidatePassword(authMechanism)
 		if err != nil {
 			return nil, err
