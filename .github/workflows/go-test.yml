@@ -1,11 +1,12 @@
 name: Go Build and Test
 on:
-  workflow_dispatch:
-  push:
-    branches:
-      - main
-  pull_request_target:
-    types: [labeled, opened, synchronize, reopened, ready_for_review]
+  pull_request:
+  # workflow_dispatch:
+  # push:
+  #   branches:
+  #     - main
+  # pull_request_target:
+  #   types: [labeled, opened, synchronize, reopened, ready_for_review]
 
 permissions:
   contents: read
@@ -37,7 +38,7 @@ jobs:
         with:
           result-encoding: string
           script: |
-            const result = await github.pulls.listFiles({
+            const result = await github.rest.pulls.listFiles({
               owner: context.payload.repository.owner.login,
               repo: context.payload.repository.name,
               pull_number: context.payload.number,
