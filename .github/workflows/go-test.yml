@@ -37,6 +37,12 @@ jobs:
         with:
           result-encoding: string
           script: |
+            // Skip if this is a push to main (not a PR)
+            if (!context.payload.pull_request) {
+              console.log('Not a PR, skipping file check')
+              return true
+            }
+
             const result = await github.rest.pulls.listFiles({
               owner: context.payload.repository.owner.login,
               repo: context.payload.repository.name,
