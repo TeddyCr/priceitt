@@ -67,4 +67,5 @@ jobs:
         with:
           version: v2.0
           verify: true
+          working-directory: service
           args: --timeout=10m0s

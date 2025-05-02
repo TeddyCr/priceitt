@@ -16,6 +16,7 @@ import (
 	"github.com/TeddyCr/priceitt/service/models/generated/createEntities"
 	"github.com/TeddyCr/priceitt/service/models/generated/entities"
 	"github.com/TeddyCr/priceitt/service/models/types"
+	"github.com/TeddyCr/priceitt/service/serializer"
 	goFernet "github.com/fernet/fernet-go"
 	"github.com/go-chi/httplog/v2"
 	"github.com/google/uuid"
@@ -52,19 +53,22 @@ func (c UserHandler) Create(ctx context.Context, createEntity generated.ICreateE
 	var encryptedSecret []byte
 	switch createUser.AuthType {
 	case "basic":
-		err := createUser.ValidatePassword()
+		authMechanism, err := serializer.DeSerBasicAuthMechanism(createUser.AuthMechanism.(map[string]interface{}))
+		err = createUser.ValidatePassword(authMechanism)
 		if err != nil {
-			panic(fmt.Sprintf("failed to validate password: %v", err))
+			return nil, err
 		}
-		authMechanism := createUser.AuthMechanism.(auth.Basic)
 		hashedSecret := fernet.HashPasswordWithSalt(authMechanism.Password, c.fernetInstance.Salt)
 		encryptedSecret = fernet.EncryptAndSign(hashedSecret, c.fernetInstance.Key[0])
 	case "google":
-		err := c.handleGoogleAuth(createUser.AuthMechanism.(auth.Google))
+		authMechanism, err := serializer.DeSerGoogleAuthMechanism(createUser.AuthMechanism.(map[string]interface{}))
 		if err != nil {
-			panic(fmt.Sprintf("failed to validate google auth: %v", err))
+			return nil, err
 		}
-		authMechanism := createUser.AuthMechanism.(auth.Google)
+		err = c.handleGoogleAuth(authMechanism)
+		if err != nil {
+			return nil, err
+		}
 		hashedSecret := fernet.HashPasswordWithSalt(authMechanism.IdToken, c.fernetInstance.Salt)
 		encryptedSecret = fernet.EncryptAndSign(hashedSecret, c.fernetInstance.Key[0])
 	}
