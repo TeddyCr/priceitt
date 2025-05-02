@@ -1,5 +1,7 @@
 //go:build unit
-// +build unitpackage user
+// +build unit
+
+package user
 
 import (
 	"context"
@@ -198,7 +200,7 @@ func TestUserHandler_Login(t *testing.T) {
 	token, err := userHandler.(UserHandler).Login(context.Background(), auth.AuthEncapsulation{
 		Type:     "basic",
 		Username: "test",
-		Data: json.RawMessage(`{"password": "passWord12345!!!", "type": "basic"}`),
+		Data:     json.RawMessage(`{"password": "passWord12345!!!", "type": "basic"}`),
 	})
 	accessTokenEntity := token["access"].(*entities.JWToken)
 	assert.NoError(t, err)
