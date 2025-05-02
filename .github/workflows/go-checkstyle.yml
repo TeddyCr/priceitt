@@ -35,7 +35,7 @@ jobs:
         with:
           result-encoding: string
           script: |
-            const result = await github.pulls.listFiles({
+            const result = await github.rest.pulls.listFiles({
               owner: context.payload.repository.owner.login,
               repo: context.payload.repository.name,
               pull_number: context.payload.number,
@@ -67,4 +67,5 @@ jobs:
         with:
           version: v2.0
           verify: true
+          working-directory: service
           args: --timeout=10m0s

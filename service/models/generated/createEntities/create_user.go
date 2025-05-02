@@ -3,50 +3,51 @@ package createEntities
 import (
 	"errors"
 	"net/http"
+
+	"github.com/TeddyCr/priceitt/service/models/generated/auth"
 )
 
 type CreateUser struct {
-	Name            string `json:"name"`
-	Email           string `json:"email"`
-	Password        string `json:"password"`
-	ConfirmPassword string `json:"confirmPassword"`
-	AuthType        string `json:"authType"`
+	Name          string `json:"name"`
+	Email         string `json:"email"`
+	AuthType      string `json:"authType"`
+	AuthMechanism any    `json:"authMechanism"`
 }
 
-func (c *CreateUser) ValidatePassword() error {
-	if err := c.ValidatePasswordLength(); err != nil {
+func (c *CreateUser) ValidatePassword(authMechanism auth.Basic) error {
+	if err := c.ValidatePasswordLength(authMechanism); err != nil {
 		return err
 	}
-	if err := c.ValidateConfirmPassword(); err != nil {
+	if err := c.ValidateConfirmPassword(authMechanism); err != nil {
 		return err
 	}
-	if err := c.ValidatePasswordCharacters(); err != nil {
+	if err := c.ValidatePasswordCharacters(authMechanism); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (c *CreateUser) ValidatePasswordLength() error {
-	if len(c.Password) < 16 {
+func (c *CreateUser) ValidatePasswordLength(authMechanism auth.Basic) error {
+	if len(authMechanism.Password) < 16 {
 		return errors.New("password must be at least 16 characters")
 	}
 	return nil
 }
 
-func (c *CreateUser) ValidateConfirmPassword() error {
-	if c.Password != c.ConfirmPassword {
+func (c *CreateUser) ValidateConfirmPassword(authMechanism auth.Basic) error {
+	if authMechanism.Password != authMechanism.ConfirmPassword {
 		return errors.New("passwords do not match")
 	}
 	return nil
 }
 
-func (c *CreateUser) ValidatePasswordCharacters() error {
+func (c *CreateUser) ValidatePasswordCharacters(authMechanism auth.Basic) error {
 	hasUpper := false
 	hasLower := false
 	hasNumber := false
 	hasSpecial := false
 
-	for _, char := range c.Password {
+	for _, char := range authMechanism.Password {
 		switch {
 		case 'A' <= char && char <= 'Z':
 			hasUpper = true
@@ -75,7 +76,12 @@ func (c *CreateUser) Bind(r *http.Request) error {
 }
 
 func (c *CreateUser) Render(w http.ResponseWriter, r *http.Request) error {
-	c.Password = ""
-	c.ConfirmPassword = ""
+	switch c.AuthType {
+	case "basic":
+		c.AuthMechanism.(*auth.Basic).Password = ""
+		c.AuthMechanism.(*auth.Basic).ConfirmPassword = ""
+	case "google":
+		c.AuthMechanism.(*auth.Google).IdToken = ""
+	}
 	return nil
 }

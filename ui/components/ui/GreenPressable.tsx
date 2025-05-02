@@ -1,5 +1,6 @@
 import React from "react";
 import { Pressable, StyleSheet } from "react-native";
+import { styles } from "../styles/Generic";
 
 type GreenPressableProps = {
     children: React.ReactNode;
@@ -11,8 +12,8 @@ const GreenPressable: React.FC<GreenPressableProps> = ({children, onPress = () =
     return (
         <Pressable 
             style={[
-                styles.container, 
-                disabled && styles.disabledContainer
+                sheetStyles.container, 
+                disabled && sheetStyles.disabledContainer
             ]} 
             onPress={onPress} 
             disabled={disabled}>
@@ -23,7 +24,7 @@ const GreenPressable: React.FC<GreenPressableProps> = ({children, onPress = () =
 
 export default GreenPressable;
 
-const styles = StyleSheet.create({
+const sheetStyles = StyleSheet.create({
     container: {
         height: 50,
         justifyContent: 'center',
@@ -32,7 +33,7 @@ const styles = StyleSheet.create({
         margin: 5,
         marginHorizontal: 15,
         borderRadius: 10,
-        borderWidth: 2,
+        borderWidth: 1,
         borderColor: '#2ca963',
     },
     disabledContainer: {

@@ -5,6 +5,10 @@ export const styles = StyleSheet.create({
         fontSize: 18,
         color: '#1b3c4b',
     },
+    text: {
+        color: '#1b3c4b',
+        fontSize: 16,
+    },
     greenPressableText: {
         color: '#faf8f5',
         fontSize: 18,

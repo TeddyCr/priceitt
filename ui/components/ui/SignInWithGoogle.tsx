@@ -1,49 +1,64 @@
-import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, View, Image } from 'react-native';
-import { styles as genericStyles } from '@/components/styles/Generic';
+import React, { useEffect } from 'react';
+import { TouchableOpacity, Text, StyleSheet, View, Image, Pressable } from 'react-native';
+import { styles } from '@/components/styles/Generic';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { CreateUserGoogle } from '../api/CreateUserGoogle';
 
 interface SignInWithGoogleProps {
-  onPress: () => void;
   text?: string;
+  onError: (message: string) => void
 }
 
-const SignInWithGoogle: React.FC<SignInWithGoogleProps> = ({ 
-  onPress, 
-  text = 'Sign in with Google' 
-}) => {
+export default function SignInWithGoogle({text = 'Sign in with Google',  onError}: SignInWithGoogleProps): React.ReactNode {
+    useEffect(() => {
+        GoogleSignin.configure({
+            iosClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID
+        });
+
+        }, []);
+
+    const onPress = async () => {
+        try {
+            await CreateUserGoogle()
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                onError(error.message)
+            } else {
+                onError(String(error))
+            }
+        }
+      };
+        
   return (
-    <TouchableOpacity 
-      style={styles.button} 
-      onPress={onPress}
-      activeOpacity={0.8}
+    <View 
+      style={sheetStyles.button} 
     >
-      <View style={styles.buttonContent}>
-        {/* <Image 
+      <Pressable style={sheetStyles.buttonContent} onPress={onPress} >
+        <Image 
           source={require('@/assets/images/google-logo.png')} 
-          style={styles.logo}
+          style={sheetStyles.logo}
           resizeMode="contain"
-        /> */}
+        />
         <Text style={styles.text}>{text}</Text>
-      </View>
-    </TouchableOpacity>
+      </Pressable>
+    </View>
   );
 };
 
-const styles = StyleSheet.create({
+const sheetStyles = StyleSheet.create({
   button: {
     backgroundColor: 'white',
-    borderRadius: 4,
-    padding: 12,
+    borderWidth: 1,
+    borderColor: '#1b3c4b',
+    height: 50,
+    borderRadius: 10,
+    padding: 10,
+    margin: 8,
+    marginHorizontal: 15,
     alignItems: 'center',
     justifyContent: 'center',
     marginVertical: 10,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1,
-    elevation: 2,
+    elevation: 5,
   },
   buttonContent: {
     flexDirection: 'row',
@@ -55,11 +70,4 @@ const styles = StyleSheet.create({
     height: 24,
     marginRight: 10,
   },
-  text: {
-    color: '#757575',
-    fontSize: 16,
-    fontWeight: '500',
-  }
 });
-
-export default SignInWithGoogle;

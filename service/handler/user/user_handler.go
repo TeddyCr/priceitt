@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/TeddyCr/priceitt/service/handler"
@@ -15,6 +16,7 @@ import (
 	"github.com/TeddyCr/priceitt/service/models/generated/createEntities"
 	"github.com/TeddyCr/priceitt/service/models/generated/entities"
 	"github.com/TeddyCr/priceitt/service/models/types"
+	"github.com/TeddyCr/priceitt/service/serializer"
 	goFernet "github.com/fernet/fernet-go"
 	"github.com/go-chi/httplog/v2"
 	"github.com/google/uuid"
@@ -25,6 +27,7 @@ import (
 	user_repository "github.com/TeddyCr/priceitt/service/repository/database/user"
 	"github.com/TeddyCr/priceitt/service/utils/fernet"
 	"github.com/TeddyCr/priceitt/service/utils/jwt"
+	"google.golang.org/api/idtoken"
 )
 
 func NewUserHandler(databaseRepository repository.IDatabaseRepository, authRepository auth_repository.IAuthRepository) handler.IHandler {
@@ -46,14 +49,35 @@ func (c UserHandler) Create(ctx context.Context, createEntity generated.ICreateE
 	if !ok {
 		panic("failed to cast to createEntities.CreateUser")
 	}
-	err := createUser.ValidatePassword()
-	if err != nil {
-		panic(fmt.Sprintf("failed to validate password: %v", err))
+
+	var encryptedSecret []byte
+	switch createUser.AuthType {
+	case "basic":
+		authMechanism, err := serializer.DeSerBasicAuthMechanism(createUser.AuthMechanism.(map[string]interface{}))
+		if err != nil {
+			return nil, err
+		}
+		err = createUser.ValidatePassword(authMechanism)
+		if err != nil {
+			return nil, err
+		}
+		hashedSecret := fernet.HashPasswordWithSalt(authMechanism.Password, c.fernetInstance.Salt)
+		encryptedSecret = fernet.EncryptAndSign(hashedSecret, c.fernetInstance.Key[0])
+	case "google":
+		authMechanism, err := serializer.DeSerGoogleAuthMechanism(createUser.AuthMechanism.(map[string]interface{}))
+		if err != nil {
+			return nil, err
+		}
+		err = c.handleGoogleAuth(authMechanism)
+		if err != nil {
+			return nil, err
+		}
+		hashedSecret := fernet.HashPasswordWithSalt(authMechanism.IdToken, c.fernetInstance.Salt)
+		encryptedSecret = fernet.EncryptAndSign(hashedSecret, c.fernetInstance.Key[0])
 	}
-	hashedPassword := fernet.HashPasswordWithSalt(createUser.Password, c.fernetInstance.Salt)
-	token := fernet.EncryptAndSign(hashedPassword, c.fernetInstance.Key[0])
-	user := c.getUser(createUser, token)
-	err = c.DatabaseRepository.Create(ctx, user)
+
+	user := c.getUser(createUser, encryptedSecret)
+	err := c.DatabaseRepository.Create(ctx, user)
 	if err != nil {
 		return nil, err
 	}
@@ -68,16 +92,20 @@ func (c UserHandler) GetByName(ctx context.Context, name string, filter reposito
 	return user, nil
 }
 
-func (c UserHandler) Login(ctx context.Context, basicAuth auth.BasicAuth) (map[string]generated.IEntity, error) {
+func (c UserHandler) Login(ctx context.Context, authEncapsuler auth.AuthEncapsulation) (map[string]generated.IEntity, error) {
 	var logger = httplog.LogEntry(ctx)
 	var user generated.IEntity
 	var err error
-	user, err = c.DatabaseRepository.GetByName(ctx, basicAuth.Username, *repository.NewQueryFilter(nil))
+	authMechanism, err := c.getAuthMechanism(authEncapsuler)
 	if err != nil {
-		user, err = c.DatabaseRepository.(*user_repository.UserRepository).GetByEmail(ctx, basicAuth.Username, *repository.NewQueryFilter(nil))
+		return nil, err
+	}
+	user, err = c.DatabaseRepository.GetByName(ctx, authEncapsuler.GetUsername(), *repository.NewQueryFilter(nil))
+	if err != nil {
+		user, err = c.DatabaseRepository.(*user_repository.UserRepository).GetByEmail(ctx, authEncapsuler.GetUsername(), *repository.NewQueryFilter(nil))
 		if err != nil && errors.Is(err, sql.ErrNoRows) {
 			logger.Debug("failed to get user", "error", err)
-			return nil, fmt.Errorf("user [%s] not found", basicAuth.Username)
+			return nil, fmt.Errorf("user [%s] not found", authEncapsuler.GetUsername())
 		} else if err != nil {
 			logger.Debug("failed to get user", "error", err)
 			return nil, err
@@ -87,19 +115,16 @@ func (c UserHandler) Login(ctx context.Context, basicAuth auth.BasicAuth) (map[s
 	if !ok {
 		return nil, errors.New("failed to cast to entities.User")
 	}
-	authJson, err := json.Marshal(userEntity.AuthenticationMechanism)
+	switch authMechanism.GetAuthType() {
+	case "basic":
+		err = c.handleBasicAuth(userEntity, authMechanism.(auth.Basic))
+	case "google":
+		err = c.handleGoogleAuth(authMechanism.(auth.Google))
+	default:
+		return nil, errors.New("invalid auth type")
+	}
 	if err != nil {
 		return nil, err
-	}
-	var auth auth.Basic
-	if err := json.Unmarshal(authJson, &auth); err != nil {
-		return nil, err
-	}
-	if !ok {
-		return nil, errors.New("failed to cast to auth.Basic")
-	}
-	if !c.validatePassword(auth.Password, basicAuth.Password) {
-		return nil, errors.New("invalid password")
 	}
 	refresh := jwt.GetRefreshToken(userEntity.ID)
 	access := jwt.GetAccessToken(userEntity.ID)
@@ -142,17 +167,28 @@ func (c UserHandler) Logout(ctx context.Context) (string, error) {
 }
 
 func (c UserHandler) getUser(createUser *createEntities.CreateUser, encryptedPassword []byte) generated.IEntity {
-	now := time.Now().UnixMilli()
-	return &entities.User{
-		ID:        uuid.New(),
-		Name:      createUser.Name,
-		CreatedAt: now,
-		UpdatedAt: now,
-		Email:     createUser.Email,
-		AuthenticationMechanism: auth.Basic{
+	var authMechanism auth.BaseAuthMechanism
+	switch createUser.AuthType {
+	case "basic":
+		authMechanism = auth.Basic{
 			Type:     "basic",
 			Password: string(encryptedPassword),
-		},
+		}
+	case "google":
+		authMechanism = auth.Google{
+			Type:     "google",
+			IdToken:  createUser.AuthMechanism.(map[string]interface{})["idToken"].(string),
+			Audience: os.Getenv("GOOGLE_CLIENT_ID"),
+		}
+	}
+	now := time.Now().UnixMilli()
+	return &entities.User{
+		ID:                      uuid.New(),
+		Name:                    createUser.Name,
+		CreatedAt:               now,
+		UpdatedAt:               now,
+		Email:                   createUser.Email,
+		AuthenticationMechanism: authMechanism,
 	}
 }
 
@@ -160,4 +196,52 @@ func (c UserHandler) validatePassword(encryptedPassword string, password string)
 	decryptedPassword := goFernet.VerifyAndDecrypt([]byte(encryptedPassword), 0, c.fernetInstance.Key)
 	hashedPassword := fernet.HashPasswordWithSalt(password, c.fernetInstance.Salt)
 	return subtle.ConstantTimeCompare(hashedPassword, decryptedPassword) == 1
+}
+
+func (c UserHandler) getAuthMechanism(authEncapsuler auth.AuthEncapsulation) (auth.BaseAuthMechanism, error) {
+	switch authEncapsuler.GetAuthType() {
+	case "basic":
+		var basicAuth auth.Basic
+		err := json.Unmarshal(authEncapsuler.GetData(), &basicAuth)
+		if err != nil {
+			return nil, err
+		}
+		return basicAuth, nil
+	case "google":
+		var googleAuth auth.Google
+		err := json.Unmarshal(authEncapsuler.GetData(), &googleAuth)
+		if err != nil {
+			return nil, err
+		}
+		return googleAuth, nil
+	default:
+		return nil, errors.New("invalid auth type")
+	}
+}
+
+func (c UserHandler) handleBasicAuth(userEntity *entities.User, basicAuth auth.Basic) error {
+	authJson, err := json.Marshal(userEntity.AuthenticationMechanism)
+	if err != nil {
+		return err
+	}
+	var auth auth.Basic
+	if err := json.Unmarshal(authJson, &auth); err != nil {
+		return err
+	}
+	if !c.validatePassword(auth.Password, basicAuth.GetPassword()) {
+		return errors.New("invalid password")
+	}
+	return nil
+}
+
+func (c UserHandler) handleGoogleAuth(authMechanism auth.Google) error {
+	validator, err := idtoken.NewValidator(context.Background())
+	if err != nil {
+		return err
+	}
+	_, err = validator.Validate(context.Background(), authMechanism.GetIdToken(), authMechanism.GetAudience())
+	if err != nil {
+		return err
+	}
+	return nil
 }

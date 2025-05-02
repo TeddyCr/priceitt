@@ -1,6 +1,6 @@
-const baseUrl = __DEV__ ? 'http://localhost:8000' : 'https://priceitt.xyz';
+const baseUrl = process.env.EXPO_PUBLIC_BASE_API_URL
 
-export async function apiFetch(endpoint: string, options: RequestInit) {
+export async function ApiFetch(endpoint: string, options: RequestInit) {
     const response = await fetch(
         `${baseUrl}${endpoint}`,
         {

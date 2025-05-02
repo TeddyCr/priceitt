@@ -31,7 +31,7 @@ export function TransparentTextInput({
     return (
         <View>
             <TextInput
-                style={styleSheet.formInput}
+                style={[styleSheet.formInput, styles.text]}
                 placeholder={placeholder}
                 value={text}
                 onChangeText={t => {if (error) setError(null); onChangeText(t)}} // if there is an error, clear the error
@@ -63,10 +63,10 @@ const styleSheet = StyleSheet.create({
     formInput: {
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'transparent',
+        backgroundColor: 'white',
         padding: 10,
         borderRadius: 10,
-        borderWidth: 2,
+        borderWidth: 1,
         borderColor: '#1b3c4b',
         height: 50,
         margin: 8,

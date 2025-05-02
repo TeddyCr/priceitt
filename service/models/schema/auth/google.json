@@ -1,25 +1,25 @@
 {
     "schema": "https://json-schema.org/draft/2020-12/schema",
-    "title": "Basic",
+    "title": "Google",
     "description": "Basic authentication schema",
     "type": "object",
     "properties": {
         "type": {
             "type": "string",
             "description": "The type of authentication",
-            "const": "basic"
+            "const": "google"
         },
-        "password": {
+        "idToken": {
             "type": "string",
-            "description": "The password of the user",
+            "description": "The id token of the user",
             "minLength": 16
         },
-        "confirmPassword": {
+        "audience": {
             "type": "string",
-            "description": "The password of the user",
+            "description": "The audience of the user",
             "minLength": 16
         }
     },
     "additionalProperties": false,
-    "required": ["password", "confirmPassword"]
+    "required": ["idToken", "audience"]
 }
