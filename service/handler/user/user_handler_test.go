@@ -1,10 +1,9 @@
 //go:build unit
-// +build unit
-
-package user
+// +build unitpackage user
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 	"time"
 
@@ -172,10 +171,10 @@ func TestUserHandler_Create(t *testing.T) {
 		Name:     "test",
 		Email:    "example@email.com",
 		AuthType: "basic",
-		AuthMechanism: auth.Basic{
-			Type:            "basic",
-			Password:        password,
-			ConfirmPassword: password,
+		AuthMechanism: map[string]interface{}{
+			"type":            "basic",
+			"password":        password,
+			"confirmPassword": password,
 		},
 	}
 	ctx := context.Background()
@@ -199,10 +198,7 @@ func TestUserHandler_Login(t *testing.T) {
 	token, err := userHandler.(UserHandler).Login(context.Background(), auth.AuthEncapsulation{
 		Type:     "basic",
 		Username: "test",
-		Data: json.RawMessage(auth.Basic{
-			Password: "passWord12345!!!",
-			Type:     "basic",
-		}),
+		Data: json.RawMessage(`{"password": "passWord12345!!!", "type": "basic"}`),
 	})
 	accessTokenEntity := token["access"].(*entities.JWToken)
 	assert.NoError(t, err)
@@ -217,6 +213,7 @@ func TestUserHandler_Login(t *testing.T) {
 }
 
 func TestGetUser(t *testing.T) {
+	initFernet()
 	password := "passWord12345!!!"
 	createUser := &createEntities.CreateUser{
 		Name:     "test",
@@ -235,7 +232,7 @@ func TestGetUser(t *testing.T) {
 	assert.Equal(t, createUser.Name, userEntity.Name)
 	assert.Equal(t, createUser.Email, userEntity.Email)
 	assert.Equal(t, createUser.AuthType, userEntity.AuthenticationMechanism.(auth.Basic).Type)
-	assert.Equal(t, createUser.Password, userEntity.AuthenticationMechanism.(auth.Basic).Password)
+	assert.Equal(t, createUser.AuthMechanism.(auth.Basic).Password, userEntity.AuthenticationMechanism.(auth.Basic).Password)
 	assert.NotNil(t, userEntity.ID)
 	assert.NotNil(t, userEntity.CreatedAt)
 	assert.NotNil(t, userEntity.UpdatedAt)
