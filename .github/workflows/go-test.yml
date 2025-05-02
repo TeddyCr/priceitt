@@ -1,12 +1,11 @@
 name: Go Build and Test
 on:
-  pull_request:
-  # workflow_dispatch:
-  # push:
-  #   branches:
-  #     - main
-  # pull_request_target:
-  #   types: [labeled, opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request_target:
+    types: [labeled, opened, synchronize, reopened, ready_for_review]
 
 permissions:
   contents: read
