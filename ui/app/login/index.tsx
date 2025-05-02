@@ -19,24 +19,6 @@ export default function Login(): ReactNode {
     signIn(random);
   }
 
-  useEffect(() => {
-    GoogleSignin.configure({
-      iosClientId: "713461610853-longvrf745bi44vl5p7k96rashc46pan.apps.googleusercontent.com"
-    });
-  }, []);
-
-  const signInWithGoogle = async () => {
-    try {
-      await GoogleSignin.hasPlayServices();
-      const userInfo = await GoogleSignin.signIn();
-      const { accessToken, idToken } = await GoogleSignin.getTokens();
-      console.log(userInfo);
-      console.log(accessToken);
-      console.log(idToken);
-    } catch (error) {
-      console.log(error);
-    }
-  };
 
   return (
     <SafeAreaView
@@ -61,7 +43,6 @@ export default function Login(): ReactNode {
         <TransparentPressable>
           <Text style={styles.transparentPressableText}>Login</Text>
         </TransparentPressable>
-        <SignInWithGoogle onPress={signInWithGoogle} />
       </View>
     </SafeAreaView>
   );

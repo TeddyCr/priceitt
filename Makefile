@@ -31,3 +31,7 @@ run_migration_tests: ## run_migration_tests -- Run migration tests
 .PHONY: run_all_tests
 run_all_tests: ## run_all_tests -- Run all tests
 	cd service && go test -v -race -cover -tags=unit,integration,migration -count=1 -coverprofile=./coverage.out ./...
+
+.PHONY: generate_ts_models
+generate_ts_models: ## generate_ts_models -- Generate TypeScript models
+	cd ui && npx json2ts --cwd='../service/models/schema/;' -i '../service/models/schema/**/*.json' -o './models/generated'                               
