@@ -15,6 +15,14 @@ format: ## format -- Format go code using golangci-lint
 format_check: ## format_check -- Check go code using golangci-lint
 	cd service && golangci-lint fmt --diff
 	cd service && golangci-lint run --issues-exit-code=0 --timeout=10m0s
+
+.PHONY: ts_format_check
+ts_format_check: ## ts_format_check -- Check typescript code using prettier
+	cd ui && npx prettier --check .
+
+.PHONY: ts_format
+ts_format: ## ts_format -- Format typescript code using prettier
+	cd ui && npx prettier --write .
 	
 .PHONY: run_unit_tests
 run_unit_tests: ## run_unit_tests -- Run unit tests

@@ -1,4 +1,4 @@
-import 'dotenv/config'; // Optional: Load environment variables from .env
+import "dotenv/config"; // Optional: Load environment variables from .env
 
 export default () => ({
   expo: {
@@ -15,18 +15,18 @@ export default () => ({
       supportsTablet: true,
       bundleIdentifier: "com.teddycr.ui",
       infoPlist: {
-        ITSAppUsesNonExemptEncryption: false
-      }
+        ITSAppUsesNonExemptEncryption: false,
+      },
     },
 
     android: {
-      package: "com.teddycr.ui"
+      package: "com.teddycr.ui",
     },
 
     web: {
       bundler: "metro",
       output: "static",
-      favicon: "./assets/images/favicon.png"
+      favicon: "./assets/images/favicon.png",
     },
 
     plugins: [
@@ -37,31 +37,38 @@ export default () => ({
           image: "./assets/images/splash-icon.png",
           imageWidth: 200,
           resizeMode: "contain",
-          backgroundColor: "#ffffff"
-        }
+          backgroundColor: "#ffffff",
+        },
       ],
       [
         "@react-native-google-signin/google-signin",
         {
-          iosUrlScheme: process.env.EXPO_PUBLIC_GOOGLE_URL_SCHEME
-        }
+          iosUrlScheme: process.env.EXPO_PUBLIC_GOOGLE_URL_SCHEME,
+        },
       ],
-      "expo-font"
+      "expo-font",
+      [
+        "expo-secure-store",
+        {
+          faceIDPermission:
+            "Allow PriceItt to access your Face ID biometric data.",
+        },
+      ],
     ],
 
     experiments: {
-      typedRoutes: true
+      typedRoutes: true,
     },
 
     extra: {
       router: {
-        origin: false
+        origin: false,
       },
       eas: {
-        projectId: "1aff4574-f08e-4dbc-9e02-f0b14850d0df"
+        projectId: "1aff4574-f08e-4dbc-9e02-f0b14850d0df",
       },
       // Add dynamic env values here if needed
-      apiUrl: process.env.API_URL
-    }
-  }
+      apiUrl: process.env.API_URL,
+    },
+  },
 });

@@ -115,7 +115,7 @@ func (c UserHandler) Login(ctx context.Context, authEncapsuler auth.AuthEncapsul
 	if !ok {
 		return nil, errors.New("failed to cast to entities.User")
 	}
-	switch authMechanism.GetAuthType() {
+	switch authEncapsuler.GetAuthType() {
 	case "basic":
 		err = c.handleBasicAuth(userEntity, authMechanism.(auth.Basic))
 	case "google":
