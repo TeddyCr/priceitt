@@ -1,0 +1,58 @@
+name: TypeScript Checkstyle
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request_target:
+    types: [labeled, opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+jobs:
+  ts-checkstyle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: ${{ false }}
+    strategy:
+      fail-fast: false
+    steps:
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: false
+          swap-storage: true
+          docker-images: false
+
+      - name: Check if relevant files have changed
+        uses: actions/github-script@v7
+        id: service-changed
+        with:
+          result-encoding: string
+          script: |
+            // Skip if this is a push to main (not a PR)
+            if (!context.payload.pull_request) {
+              console.log('Not a PR, skipping file check')
+              return true
+            }
+            
+            const result = await github.rest.pulls.listFiles({
+              owner: context.payload.repository.owner.login,
+              repo: context.payload.repository.name,
+              pull_number: context.payload.number,
+              per_page: 100
+            })
+            const serviceChanged = result.data.filter(f => f.filename.startsWith("service/")).length > 0
+            console.log(serviceChanged)
+            return serviceChanged
+
+      - uses: actions/checkout@v4
+        if: ${{ steps.service-changed.outputs.result == 'true' }}
+        with:
+            ref: ${{ github.event.pull_request.head.sha }}
+            fetch-depth: 0
