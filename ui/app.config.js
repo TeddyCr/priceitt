@@ -46,7 +46,13 @@ export default () => ({
           iosUrlScheme: process.env.EXPO_PUBLIC_GOOGLE_URL_SCHEME
         }
       ],
-      "expo-font"
+      "expo-font",
+      [
+        "expo-secure-store",
+        {
+          "faceIDPermission": "Allow PriceItt to access your Face ID biometric data."
+        }
+      ]
     ],
 
     experiments: {

@@ -1,11 +1,10 @@
 import { CreateUser } from "@/models/generated/createUser";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
-import Config from "react-native-config";
-import { ApiFetch } from "./ApiFetcher";
 import { router } from "expo-router";
 import { ApiEndpoints } from "./Endpoints";
+import { ApiFetch } from "./ApiFetcher";
 
-export async function CreateUserGoogle() {
+export async function CreateUserGoogle(): Promise<{username: string | null, idToken: string | null} | never> {
     await GoogleSignin.hasPlayServices();
     const currentUser = GoogleSignin.getCurrentUser();
     var createUser: CreateUser
@@ -27,7 +26,7 @@ export async function CreateUserGoogle() {
         method: 'POST',
         body: JSON.stringify(createUser)
     })
-    router.push("/login")
+    return {username: currentUser?.user.email ?? null, idToken: currentUser?.idToken ?? null}
 }
 
 async function getUserFromGoogle(): Promise<CreateUser> {

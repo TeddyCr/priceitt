@@ -1,4 +1,5 @@
 import { CreateUserBasic } from "@/components/api/CreateUserBasic";
+import { LoginUserBasic, LoginUserGoogle } from "@/components/api/LoginUser";
 import { styles } from "@/components/styles/Generic";
 import { TopNav } from "@/components/styles/TopNav";
 import { Alert } from "@/components/ui/Alert";
@@ -7,6 +8,7 @@ import SignInWithGoogle from "@/components/ui/SignInWithGoogle";
 import { TransparentTextInput } from "@/components/ui/TransparentTextInput";
 import ValidateEmail from "@/components/validators/ValidateEmail";
 import ValidatePassword, { ValidateConfirmPassword } from "@/components/validators/ValidatePassword";
+import { useAuthSession } from "@/providers/AuthProvider";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { View, Text, SafeAreaView, StyleSheet } from "react-native";
@@ -19,6 +21,12 @@ export default function CreateAccount() {
     const [fullName, setFullName] = useState('');
     const [alert, setAlert] = useState<{type: 'error' | 'success' | 'info', message: string} | null>(null);
     
+    const {signIn} = useAuthSession();
+    const login = (accessToken: string, refreshToken: string) => {
+        signIn(accessToken, refreshToken);
+    }
+
+
     const handleDismissAlert = () => {
         setAlert(null);
     }
@@ -28,6 +36,12 @@ export default function CreateAccount() {
             type: 'error',
             message: message,
         });
+    }
+
+    const handleOnSuccess = async (email: string, idToken: string) => {
+        const {accessToken, refreshToken} = await LoginUserGoogle(email, idToken);
+        login(accessToken, refreshToken);
+        router.push('/login');
     }
 
     useEffect(() => {
@@ -63,7 +77,7 @@ export default function CreateAccount() {
             <View style={{flex: 1, marginBottom: 40}}>
                 <Text style={styles.titleText}>Create Account</Text>
             </View>
-            <SignInWithGoogle text="Continue with Google" onError={handleOnError} />
+            <SignInWithGoogle text="Continue with Google" onError={handleOnError} onSuccess={handleOnSuccess} />
             <View style={sheetStyles.orContainer}>
                 <View style={sheetStyles.horizontalLine} />
                 <Text style={sheetStyles.orText}>OR</Text>
@@ -105,6 +119,9 @@ export default function CreateAccount() {
                 onPress={async () => {
                     try {
                         await CreateUserBasic(fullName, email, password, confirmPassword);
+                        const {accessToken, refreshToken} = await LoginUserBasic(email, password);
+                        login(accessToken, refreshToken);
+                        router.push('/login');
                     } catch (error) {
                         if (error instanceof Error && error.cause) {
                             const errorData = error.cause as { message: string, error: string };

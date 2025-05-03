@@ -1,8 +1,8 @@
-import { router } from "expo-router";
-import { ApiFetch } from "./ApiFetcher";
 import { ApiEndpoints } from "./Endpoints";
+import { ApiFetch } from "./ApiFetcher";
 
 export async function CreateUserBasic(fullName: string, email: string, password: string, confirmPassword: string): Promise<void | never> {
+    
     await ApiFetch(ApiEndpoints.USER, {
         method: 'POST',
         body: JSON.stringify(
@@ -18,5 +18,4 @@ export async function CreateUserBasic(fullName: string, email: string, password:
             }
         )
     })
-    router.push('/login');
 }

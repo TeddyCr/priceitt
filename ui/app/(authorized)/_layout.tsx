@@ -9,7 +9,7 @@ import { useAuthSession } from '@/providers/AuthProvider';
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const {token, isLoading} = useAuthSession()
+  const {accessToken, refreshToken, isLoading} = useAuthSession()
   const [loaded] = useFonts({
     SpaceMono: require('../../assets/fonts/SpaceMono-Regular.ttf'),
   });
@@ -24,7 +24,7 @@ export default function RootLayout() {
     return null;
   }
 
-  if (!token?.current) {
+  if (!accessToken?.current && !refreshToken?.current) {
     return <Redirect href="/login" />;
   }
 

@@ -7,19 +7,22 @@ import { CreateUserGoogle } from '../api/CreateUserGoogle';
 interface SignInWithGoogleProps {
   text?: string;
   onError: (message: string) => void
+  onSuccess: (email: string, idToken: string) => void
 }
 
-export default function SignInWithGoogle({text = 'Sign in with Google',  onError}: SignInWithGoogleProps): React.ReactNode {
+export default function SignInWithGoogle({text = 'Sign in with Google', onSuccess, onError}: SignInWithGoogleProps): React.ReactNode {
     useEffect(() => {
         GoogleSignin.configure({
             iosClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID
         });
-
         }, []);
 
     const onPress = async () => {
         try {
-            await CreateUserGoogle()
+            const {username, idToken} = await CreateUserGoogle()
+            if (username && idToken) {
+                onSuccess(username, idToken)
+            }
         } catch (error: unknown) {
             if (error instanceof Error) {
                 onError(error.message)

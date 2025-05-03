@@ -1,17 +1,19 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { isLoading } from "expo-font";
+import * as SecureStore from 'expo-secure-store';
 import { router } from "expo-router";
 import { createContext, MutableRefObject, useCallback, useContext, useEffect, useRef, useState } from "react";
 
 const AuthContext = createContext<{
-    signIn: (arg0: string) => void;
+    signIn: (accessToken: string, refreshToken: string) => void;
     signOut: () => void;
-    token: MutableRefObject<string | null> | null;
+    accessToken: MutableRefObject<string | null> | null;
+    refreshToken: MutableRefObject<string | null> | null;
     isLoading: boolean;
 }>({
     signIn: () => null,
     signOut: () => null,
-    token: null,
+    accessToken: null,
+    refreshToken: null,
     isLoading: true
 });
 
@@ -20,27 +22,33 @@ export function useAuthSession() {
 }
 
 export default function AuthProvider({children}: {children: React.ReactNode}) {
-    const tokenRef = useRef<string | null>(null);
+    const accessTokenRef = useRef<string | null>(null);
+    const refreshTokenRef = useRef<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         (async ():Promise<void> => {
-            AsyncStorage.clear()
-            const token = await AsyncStorage.getItem('@accessToken');
-            tokenRef.current = token || null;
+            const accessToken = await SecureStore.getItemAsync('accessToken');
+            const refreshToken = await SecureStore.getItemAsync('refreshToken');
+            accessTokenRef.current = accessToken || null;
+            refreshTokenRef.current = refreshToken || null;
             setIsLoading(false);
         })()
     }, []);
 
-    const signIn = useCallback(async (token: string) => {
-        await AsyncStorage.setItem('@accessToken', token);
-        tokenRef.current = token;
+    const signIn = useCallback(async (accessToken: string, refreshToken: string) => {
+        await SecureStore.setItemAsync('accessToken', accessToken);
+        await SecureStore.setItemAsync('refreshToken', refreshToken);
+        accessTokenRef.current = accessToken;
+        refreshTokenRef.current = refreshToken;
         router.replace('/');
     }, [])
 
     const signOut = useCallback(async () => {
-        await AsyncStorage.removeItem('@accessToken');
-        tokenRef.current = null;
+        await SecureStore.deleteItemAsync('accessToken');
+        await SecureStore.deleteItemAsync('refreshToken');
+        accessTokenRef.current = null;
+        refreshTokenRef.current = null;
         router.replace('/');
     }, [])
 
@@ -49,7 +57,8 @@ export default function AuthProvider({children}: {children: React.ReactNode}) {
             value={{
                 signIn,
                 signOut,
-                token: tokenRef,
+                accessToken: accessTokenRef,
+                refreshToken: refreshTokenRef,
                 isLoading,
             }}
         >
